@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JITO Ahmedabad Multi-Sports Registration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      --jito-blue: #2F2677;
+      --jito-green: #008F3D;
+      --jito-yellow: #FDD900;
+      --jito-red: #E20111;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+
+  <!-- Top 4-Color Stripe -->
+  <div class="h-2.5 w-full flex">
+    <div class="h-full w-1/4 bg-[#2F2677]"></div>
+    <div class="h-full w-1/4 bg-[#008F3D]"></div>
+    <div class="h-full w-1/4 bg-[#FDD900]"></div>
+    <div class="h-full w-1/4 bg-[#E20111]"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="flex flex-col items-center">
+          <div class="flex rounded-md overflow-hidden shadow-sm border border-slate-300">
+            <div class="w-7 h-7 bg-[#2F2677] text-white flex items-center justify-center font-serif font-black text-base">J</div>
+            <div class="w-7 h-7 bg-[#008F3D] text-white flex items-center justify-center font-serif font-black text-base">I</div>
+            <div class="w-7 h-7 bg-[#FDD900] text-white flex items-center justify-center font-serif font-black text-base">T</div>
+            <div class="w-7 h-7 bg-[#E20111] text-white flex items-center justify-center font-serif font-black text-base">O</div>
+          </div>
+          <span class="text-[9px] font-black tracking-widest text-[#2F2677] mt-0.5">AHMEDABAD</span>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-black text-slate-900 leading-tight">MULTI-SPORTS MEET</h1>
+          <p class="text-xs text-slate-500 hidden sm:block">Player Registration, Squad Booking & Match Records</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div id="nav-user-profile" style="display:none;" class="items-center gap-2">
+          <img id="nav-player-avatar" src="" alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-slate-300 shadow-sm" />
+          <div class="text-right hidden sm:block">
+            <div id="nav-player-id" class="text-xs font-black text-[#2F2677]"></div>
+            <div id="nav-player-name" class="text-[11px] font-bold text-slate-600 truncate max-w-[120px]"></div>
+          </div>
+          <button type="button" onclick="handleLogout()" class="px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-all">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out
+          </button>
+        </div>
+
+        <button type="button" onclick="openAdminAuth()" class="cursor-pointer px-3 py-1.5 rounded-lg border border-slate-300 hover:border-slate-400 bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-lock text-slate-400"></i>
+          <span>Admin</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8">
+
+    <!-- VIEW 1: AUTHENTICATION -->
+    <section id="view-auth" class="space-y-6">
+      <div class="bg-gradient-to-br from-[#2F2677] via-[#241c60] to-[#171241] rounded-2xl p-6 sm:p-8 text-white shadow-lg">
+        <span class="inline-block px-3 py-1 bg-white/15 backdrop-blur-sm rounded-full text-xs font-semibold text-amber-300 border border-white/20 mb-3">
+          JITO Ahmedabad Sports Committee
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold leading-tight">Player Portal & Slot Reservation</h2>
+        <p class="text-sm text-slate-200 mt-2">
+          Sign up with your photo to receive your sequential Player ID (MP for Males, FP for Females). Log in anytime to book individual/group slots and view match results.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+        <!-- Switch Tabs -->
+        <div class="flex border-b border-slate-200 mb-6">
+          <button type="button" id="tab-login" onclick="switchAuthTab('login')" class="pb-3 px-6 text-sm font-black border-b-2 border-[#2F2677] text-[#2F2677]">
+            <i class="fa-solid fa-right-to-bracket mr-2"></i> Player Login
+          </button>
+          <button type="button" id="tab-signup" onclick="switchAuthTab('signup')" class="pb-3 px-6 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-700">
+            <i class="fa-solid fa-user-plus mr-2"></i> New Player Sign-Up
+          </button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="form-login" onsubmit="handlePlayerLogin(event)" class="space-y-4 max-w-md mx-auto">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Player ID or Mobile Number *</label>
+            <input type="text" id="login-identifier" required placeholder="e.g. MP1, FP1 or 10-digit mobile" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#2F2677] text-sm" />
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Password *</label>
+              <button type="button" onclick="openResetPasswordModal()" class="text-xs text-[#2F2677] font-bold hover:underline">Forgot Password?</button>
+            </div>
+            <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#2F2677] text-sm" />
+          </div>
+
+          <p id="login-error-msg" class="text-xs text-rose-600 font-bold hidden"></p>
+
+          <button type="submit" class="w-full py-3.5 bg-[#2F2677] hover:bg-[#231b61] text-white font-black text-sm rounded-xl shadow-md transition-all">
+            Log In & Open Dashboard
+          </button>
+
+          <p class="text-center text-xs text-slate-500 pt-2">
+            First time playing? <button type="button" onclick="switchAuthTab('signup')" class="text-[#2F2677] font-bold underline">Create your Player ID</button>
+          </p>
+        </form>
+
+        <!-- SIGN UP FORM -->
+        <form id="form-signup" onsubmit="handlePlayerSignup(event)" class="space-y-6" style="display:none;">
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 font-medium">
+            <i class="fa-solid fa-circle-info text-amber-600 mr-1.5"></i>
+            Creates a permanent sequential ID: <strong>MP1, MP2...</strong> (Male) or <strong>FP1, FP2...</strong> (Female). Compulsory verification photo required.
+          </div>
+
+          <!-- Photo Upload Section -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Upload Profile Photo (Compulsory) *</label>
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+              <div class="w-20 h-20 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center bg-white overflow-hidden relative shadow-sm">
+                <img id="signup-photo-preview" src="" alt="Preview" class="w-full h-full object-cover hidden" />
+                <span id="signup-photo-placeholder" class="text-slate-400 text-xs text-center px-1"><i class="fa-solid fa-camera text-base block mb-0.5"></i>Photo</span>
+              </div>
+              <div class="flex-1 w-full">
+                <input type="file" id="signup-photo-input" accept="image/*" required onchange="handlePhotoUpload(event)" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#2F2677] file:text-white hover:file:bg-[#231b61] cursor-pointer" />
+                <p class="text-[11px] text-slate-400 mt-1">JPEG or PNG. This photo will appear on your pass and identity badge.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Full Name *</label>
+              <input type="text" id="signup-name" required placeholder="Full Name" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#2F2677] text-sm" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Mobile Number *</label>
+              <div class="flex">
+                <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-300 bg-slate-50 text-slate-500 text-sm font-semibold">+91</span>
+                <input type="tel" id="signup-mobile" required pattern="[0-9]{10}" maxlength="10" placeholder="10-digit mobile" class="w-full px-3.5 py-2.5 rounded-r-xl border border-slate-300 focus:ring-2 focus:ring-[#2F2677] text-sm" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Gender * (Sets MP or FP ID)</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+                  <input type="radio" name="signup_gender" value="Male" required class="text-[#2F2677]" />
+                  <span class="text-sm font-bold text-slate-700">Male (MP)</span>
+                </label>
+                <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+                  <input type="radio" name="signup_gender" value="Female" class="text-[#2F2677]" />
+                  <span class="text-sm font-bold text-slate-700">Female (FP)</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Age Group *</label>
+              <select id="signup-age" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-[#2F2677] text-sm">
+                <option value="">Select Age Group</option>
+                <option value="18-28">18 - 28</option>
+                <option value="29-40">29 - 40</option>
+                <option value="41-50">41 - 50</option>
+                <option value="50+">50+</option>
+              </select>
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Membership Category *</label>
+              <select id="signup-membership" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-[#2F2677] text-sm">
+                <option value="">Select JITO Membership</option>
+                <option value="JITO FCP">JITO FCP</option>
+                <option value="JITO Patron">JITO Patron</option>
+                <option value="JBN">JBN (JITO Business Network)</option>
+                <option value="JITO Youth Wing">JITO Youth Wing</option>
+                <option value="JITO Ladies Wing">JITO Ladies Wing</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Playing Frequencies -->
+          <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <p class="text-xs font-bold text-slate-700 uppercase tracking-wider">How often do you play each sport?</p>
+            
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2 p-2.5 bg-white rounded-lg border border-slate-200">
+              <span class="text-xs font-bold text-slate-800"><i class="fa-solid fa-table-tennis-paddle-ball text-[#008F3D] mr-1.5"></i>Pickleball</span>
+              <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                <label class="cursor-pointer"><input type="radio" name="freq_pickleball" value="Daily" required /> Daily</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_pickleball" value="Weekly" /> Weekly</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_pickleball" value="Monthly" /> Monthly</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_pickleball" value="Occasionally" /> Occasionally</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_pickleball" value="Never" /> Never</label>
+              </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2 p-2.5 bg-white rounded-lg border border-slate-200">
+              <span class="text-xs font-bold text-slate-800"><i class="fa-solid fa-baseball-bat-ball text-[#E20111] mr-1.5"></i>Box Cricket</span>
+              <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                <label class="cursor-pointer"><input type="radio" name="freq_cricket" value="Daily" required /> Daily</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_cricket" value="Weekly" /> Weekly</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_cricket" value="Monthly" /> Monthly</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_cricket" value="Occasionally" /> Occasionally</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_cricket" value="Never" /> Never</label>
+              </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2 p-2.5 bg-white rounded-lg border border-slate-200">
+              <span class="text-xs font-bold text-slate-800"><i class="fa-solid fa-racquet text-[#FDD900] mr-1.5"></i>Paddle Ball</span>
+              <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                <label class="cursor-pointer"><input type="radio" name="freq_paddle" value="Daily" required /> Daily</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_paddle" value="Weekly" /> Weekly</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_paddle" value="Monthly" /> Monthly</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_paddle" value="Occasionally" /> Occasionally</label>
+                <label class="cursor-pointer"><input type="radio" name="freq_paddle" value="Never" /> Never</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Set Password *</label>
+              <input type="password" id="signup-password" required minlength="4" placeholder="Min 4 characters" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#2F2677] text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Confirm Password *</label>
+              <input type="password" id="signup-confirm-password" required minlength="4" placeholder="Re-type password" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#2F2677] text-sm" />
+            </div>
+          </div>
+          <p id="signup-error-msg" class="text-xs text-rose-600 font-bold hidden"></p>
+
+          <button type="submit" class="w-full py-4 bg-[#008F3D] hover:bg-[#007532] text-white font-black text-sm rounded-xl shadow-md transition-all">
+            Complete Sign-Up & Get Permanent ID
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- VIEW 2: LOGGED IN BOOKING PORTAL -->
+    <section id="view-booking" class="space-y-6" style="display:none;">
+      <!-- Profile Summary with Photo -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3.5">
+            <img id="player-profile-photo" src="" alt="Player Photo" class="w-14 h-14 rounded-full object-cover border-2 border-[#2F2677] shadow-sm flex-shrink-0" />
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="player-profile-id" class="px-2 py-0.5 rounded-md bg-[#2F2677] text-white text-xs font-black tracking-wider font-mono"></span>
+                <h3 id="player-profile-name" class="text-base font-extrabold text-slate-900"></h3>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Mobile: <span id="player-profile-mobile" class="font-mono text-slate-700 font-bold"></span> • Age: <span id="player-profile-age"></span> • Chapter: <span id="player-profile-membership"></span></p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span id="player-current-booking-status" class="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">No Active Slot Booked</span>
+          </div>
+        </div>
+
+        <!-- Team Booking Notice Banner (Shows if booked by a teammate) -->
+        <div id="player-team-booking-alert" class="hidden text-xs bg-indigo-50 border-2 border-indigo-200 rounded-xl p-3.5 text-indigo-950">
+          <div class="flex items-center gap-2 font-black text-sm text-[#2F2677] mb-1">
+            <i class="fa-solid fa-users-viewfinder text-base"></i>
+            <span>Confirmed Squad / Team Registration</span>
+          </div>
+          <div id="player-team-booking-details" class="space-y-1 font-medium mt-1"></div>
+        </div>
+      </div>
+
+      <!-- CHANGE 3: PLAYER BOOKING & MATCH HISTORY TABLE WITH GAME RESULTS -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-[#008F3D] text-white flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-trophy"></i></span>
+            <h3 class="text-base font-bold text-slate-900">My Booking & Match Result History</h3>
+          </div>
+          <span class="text-xs text-slate-400">Official tournament records</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-800 font-bold uppercase border-b border-slate-200">
+              <tr>
+                <th class="py-2 px-3">Date & Time</th>
+                <th class="py-2 px-3">Sport</th>
+                <th class="py-2 px-3">Time Slot</th>
+                <th class="py-2 px-3">Squad / Teammates</th>
+                <th class="py-2 px-3">Status</th>
+                <th class="py-2 px-3">Match Result</th>
+              </tr>
+            </thead>
+            <tbody id="player-history-tbody" class="divide-y divide-slate-100">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sports & Slots Form -->
+      <form id="form-slot-booking" onsubmit="handleSlotReservation(event)" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-6">
+        <div>
+          <h3 class="text-base font-bold text-slate-900 mb-1">Select Sports & Preferred Time Slots</h3>
+          <p class="text-xs text-slate-500 mb-4">Book slots individually or choose <strong>Group Booking (Up to 4 players)</strong> for Pickleball and Paddle Ball. Overlapping hours across sports are locked automatically.</p>
+
+          <div class="space-y-5">
+            <!-- Pickleball -->
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 transition-all" id="block-pickleball">
+              <label class="flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-3">
+                  <input type="checkbox" id="check-pickleball" onchange="toggleSport('pickleball')" class="w-5 h-5 rounded text-[#2F2677]" />
+                  <div>
+                    <span class="font-extrabold text-slate-900 text-base">Pickleball</span>
+                    <span class="ml-2 text-xs px-2 py-0.5 rounded bg-indigo-100 text-[#2F2677] font-bold">10 Courts (40 spots/hr)</span>
+                  </div>
+                </div>
+                <i class="fa-solid fa-table-tennis-paddle-ball text-xl text-[#2F2677]"></i>
+              </label>
+
+              <div id="slots-pickleball" class="mt-4 pt-3 border-t border-slate-200 hidden space-y-3">
+                <!-- Group Booking Option -->
+                <div class="p-3.5 bg-indigo-50/70 border border-indigo-200 rounded-xl">
+                  <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-indigo-950">
+                    <input type="checkbox" id="group-pickleball-toggle" onchange="toggleGroupBookingUI('pickleball')" class="rounded text-[#2F2677]" />
+                    <span>Book as a Group / Team (Max 4 Players including yourself)</span>
+                  </label>
+                  <div id="group-pickleball-inputs" class="mt-3 space-y-2 hidden">
+                    <p class="text-[11px] text-slate-600">Enter up to 3 teammate Player IDs. If a player is already occupied in that time slot, booking will be prevented:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <input type="text" id="group-pb-p2" placeholder="Player 2 ID (e.g. MP2)" class="uppercase px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono font-bold" />
+                      <input type="text" id="group-pb-p3" placeholder="Player 3 ID (Optional)" class="uppercase px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono font-bold" />
+                      <input type="text" id="group-pb-p4" placeholder="Player 4 ID (Optional)" class="uppercase px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono font-bold" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="text-xs font-bold text-slate-700 mb-2">Select Pickleball Time Slot:</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5" id="grid-pickleball"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Box Cricket -->
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 transition-all" id="block-cricket">
+              <label class="flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-3">
+                  <input type="checkbox" id="check-cricket" onchange="toggleSport('cricket')" class="w-5 h-5 rounded text-[#E20111]" />
+                  <div>
+                    <span class="font-extrabold text-slate-900 text-base">Box Cricket</span>
+                    <span class="ml-2 text-xs px-2 py-0.5 rounded bg-rose-100 text-[#E20111] font-bold">2 Arenas (28 spots/hr)</span>
+                  </div>
+                </div>
+                <i class="fa-solid fa-baseball-bat-ball text-xl text-[#E20111]"></i>
+              </label>
+
+              <div id="slots-cricket" class="mt-4 pt-3 border-t border-slate-200 hidden">
+                <p class="text-xs font-bold text-slate-700 mb-2">Select Box Cricket Time Slot:</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5" id="grid-cricket"></div>
+              </div>
+            </div>
+
+            <!-- Paddle Ball -->
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 transition-all" id="block-paddleball">
+              <label class="flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-3">
+                  <input type="checkbox" id="check-paddleball" onchange="toggleSport('paddleball')" class="w-5 h-5 rounded text-[#008F3D]" />
+                  <div>
+                    <span class="font-extrabold text-slate-900 text-base">Paddle Ball</span>
+                    <span class="ml-2 text-xs px-2 py-0.5 rounded bg-emerald-100 text-[#008F3D] font-bold">2 Courts (8 spots/hr)</span>
+                  </div>
+                </div>
+                <i class="fa-solid fa-racquet text-xl text-[#008F3D]"></i>
+              </label>
+
+              <div id="slots-paddleball" class="mt-4 pt-3 border-t border-slate-200 hidden space-y-3">
+                <!-- Group Booking Option -->
+                <div class="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl">
+                  <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-emerald-950">
+                    <input type="checkbox" id="group-paddleball-toggle" onchange="toggleGroupBookingUI('paddleball')" class="rounded text-[#008F3D]" />
+                    <span>Book as a Group / Team (Max 4 Players including yourself)</span>
+                  </label>
+                  <div id="group-paddleball-inputs" class="mt-3 space-y-2 hidden">
+                    <p class="text-[11px] text-slate-600">Enter up to 3 teammate Player IDs. If a player is already occupied in that time slot, booking will be prevented:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <input type="text" id="group-paddle-p2" placeholder="Player 2 ID (e.g. MP2)" class="uppercase px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono font-bold" />
+                      <input type="text" id="group-paddle-p3" placeholder="Player 3 ID (Optional)" class="uppercase px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono font-bold" />
+                      <input type="text" id="group-paddle-p4" placeholder="Player 4 ID (Optional)" class="uppercase px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono font-bold" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="text-xs font-bold text-slate-700 mb-2">Select Paddle Ball Time Slot:</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5" id="grid-paddleball"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-save-slot" class="w-full py-4 bg-[#2F2677] hover:bg-[#231b61] text-white font-black text-base rounded-xl shadow-md transition-all">
+          <span id="btn-save-slot-text">Confirm Slot Booking</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- VIEW 3: ADMIN DASHBOARD -->
+    <section id="view-admin" class="space-y-6" style="display:none;">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div>
+          <span class="px-2 py-0.5 rounded bg-purple-100 text-[#2F2677] font-bold text-xs uppercase">Authorized Only</span>
+          <h2 class="text-xl font-black text-slate-900 mt-1">Admin Control Center</h2>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="openChangePinModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-300">
+            <i class="fa-solid fa-key mr-1"></i> Change PIN
+          </button>
+          <button type="button" onclick="exportFullMasterCSV()" class="px-4 py-2 bg-[#008F3D] hover:bg-[#007532] text-white rounded-xl text-xs font-bold shadow-sm">
+            <i class="fa-solid fa-file-excel mr-1"></i> Export Full Sheet (CSV)
+          </button>
+          <button type="button" onclick="logoutAdmin()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold">
+            Exit Admin
+          </button>
+        </div>
+      </div>
+
+      <!-- Capacity Rights -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h3 class="text-base font-bold text-slate-900 mb-1">Live Court Slot Capacity & Quota Rights</h3>
+        <p class="text-xs text-slate-500 mb-4">Adjust maximum player capacity per sport per time slot in real-time[cite: 1]</p>
+        <div id="admin-inventory-table" class="overflow-x-auto"></div>
+      </div>
+
+      <!-- Player Registry Database with Game Result Coordinator -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h3 class="text-base font-bold text-slate-900 mb-1">Master Player Database, Bookings & Match Results</h3>
+        <p class="text-xs text-slate-500 mb-4">Update match results directly in-line; changes immediately reflect in the player's dashboard</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-800 font-bold uppercase border-b border-slate-200">
+              <tr>
+                <th class="py-2.5 px-3">Photo</th>
+                <th class="py-2.5 px-3">Player ID</th>
+                <th class="py-2.5 px-3">Full Name</th>
+                <th class="py-2.5 px-3">Mobile</th>
+                <th class="py-2.5 px-3">Pickleball</th>
+                <th class="py-2.5 px-3">Cricket</th>
+                <th class="py-2.5 px-3">Paddle</th>
+                <th class="py-2.5 px-3">Current Match Result</th>
+                <th class="py-2.5 px-3">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-players-tbody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODALS -->
+
+  <!-- CHANGE 2: RESET PASSWORD MODAL -->
+  <div id="modal-reset-password" style="display:none;" class="fixed inset-0 bg-black/65 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
+      <div class="w-12 h-12 bg-indigo-50 text-[#2F2677] rounded-full flex items-center justify-center mx-auto text-xl mb-3">
+        <i class="fa-solid fa-key"></i>
+      </div>
+      <h3 class="text-lg font-black text-slate-900">Reset Player Password</h3>
+      <p class="text-xs text-slate-500 mt-1">Verify your identity to choose a new password</p>
+
+      <form onsubmit="handleResetPasswordSubmit(event)" class="mt-4 space-y-3 text-left">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Player ID or Registered Mobile *</label>
+          <input type="text" id="reset-identifier" required placeholder="e.g. MP1 or 10-digit mobile" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#2F2677]" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">New Password *</label>
+          <input type="password" id="reset-new-password" required minlength="4" placeholder="Min 4 characters" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#2F2677]" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Confirm New Password *</label>
+          <input type="password" id="reset-confirm-password" required minlength="4" placeholder="Re-type new password" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#2F2677]" />
+        </div>
+        <p id="reset-error-msg" class="text-xs text-rose-600 font-bold hidden"></p>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeResetPasswordModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50">Cancel</button>
+          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-[#2F2677] text-white text-xs font-bold hover:bg-[#231b61]">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin PIN Modal -->
+  <div id="modal-admin-auth" style="display:none;" class="fixed inset-0 bg-black/65 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
+      <div class="w-12 h-12 bg-slate-100 text-slate-700 rounded-full flex items-center justify-center mx-auto text-xl mb-3">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h3 class="text-lg font-black text-slate-900">Admin Authorization</h3>
+      <p class="text-xs text-slate-500 mt-1">Enter your organizer PIN</p>
+
+      <form onsubmit="verifyAdminPin(event)" class="mt-4 space-y-3">
+        <input type="password" id="admin-pin-input" required maxlength="8" placeholder="••••" class="w-full px-4 py-2.5 text-center text-xl tracking-widest font-mono rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#2F2677]" />
+        <p id="admin-auth-error" class="text-xs text-rose-600 font-bold hidden">Invalid PIN. Please try again.</p>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeAdminAuth()" class="w-1/2 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50">Cancel</button>
+          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-[#2F2677] text-white text-xs font-bold hover:bg-[#231b61]">Unlock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Sign Up Success Modal -->
+  <div id="modal-signup-success" style="display:none;" class="fixed inset-0 bg-black/65 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
+      <img id="signup-success-photo" src="" alt="Photo" class="w-16 h-16 rounded-full object-cover border-2 border-[#008F3D] mx-auto mb-2 shadow-sm" />
+      <h3 class="text-lg font-black text-slate-900">Sign-Up Complete!</h3>
+      <p class="text-xs text-slate-500 mt-0.5">Your permanent Player ID is:</p>
+      
+      <div class="my-3 py-2 px-4 bg-indigo-50 border-2 border-[#2F2677] rounded-xl">
+        <span id="new-assigned-id" class="text-2xl font-black text-[#2F2677] tracking-wider font-mono"></span>
+      </div>
+
+      <p class="text-[11px] text-slate-500 mb-4">Please keep this ID safe. You are now logged in and can proceed to book your sports slots.</p>
+
+      <button type="button" onclick="closeSignupSuccessModal()" class="w-full py-3 bg-[#008F3D] text-white font-bold rounded-xl text-sm hover:bg-[#007532]">
+        Continue to Slot Booking
+      </button>
+    </div>
+  </div>
+
+  <!-- Booking Pass Modal -->
+  <div id="modal-pass" style="display:none;" class="fixed inset-0 bg-black/65 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl text-center">
+      <div class="w-14 h-14 bg-green-100 text-[#008F3D] rounded-full flex items-center justify-center mx-auto text-2xl mb-3">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <h3 class="text-xl font-black text-slate-900">Slot Successfully Reserved!</h3>
+      <p class="text-xs text-slate-500 mt-1">Present this pass with your photo verification at the venue.</p>
+
+      <div class="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-left text-xs space-y-2.5">
+        <div class="flex items-center gap-3 border-b pb-2">
+          <img id="pass-player-photo" src="" alt="Pass Photo" class="w-12 h-12 rounded-full object-cover border border-[#2F2677]" />
+          <div>
+            <div id="pass-player-id" class="font-black text-[#2F2677] font-mono text-sm"></div>
+            <div id="pass-player-name" class="font-bold text-slate-900"></div>
+          </div>
+        </div>
+        <div>
+          <span class="text-slate-500 block mb-1">Booked Slots:</span>
+          <div id="pass-sports-summary" class="space-y-1 font-semibold"></div>
+        </div>
+      </div>
+
+      <button type="button" onclick="closeModal()" class="w-full mt-5 py-3 bg-[#2F2677] text-white font-bold rounded-xl text-sm">
+        Done
+      </button>
+    </div>
+  </div>
+
+  <!-- Change PIN Modal -->
+  <div id="modal-change-pin" style="display:none;" class="fixed inset-0 bg-black/65 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
+      <h3 class="text-lg font-black text-slate-900">Change Admin PIN</h3>
+      <form onsubmit="handlePinChange(event)" class="mt-4 space-y-3 text-left">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Current PIN</label>
+          <input type="password" id="pin-current" required maxlength="8" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">New PIN</label>
+          <input type="password" id="pin-new" required minlength="4" maxlength="8" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Confirm New PIN</label>
+          <input type="password" id="pin-confirm" required minlength="4" maxlength="8" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300" />
+        </div>
+        <p id="change-pin-error" class="text-xs text-rose-600 font-bold hidden"></p>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeChangePinModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-600">Cancel</button>
+          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-[#008F3D] text-white text-xs font-bold">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    var currentAdminPin = localStorage.getItem('jito_admin_pin') || "1926";
+
+    var INITIAL_INVENTORY = {
+      pickleball: {
+        name: "Pickleball",
+        slots: {
+          "8-9PM": { cap: 40, booked: 0 },
+          "9-10PM": { cap: 40, booked: 0 },
+          "10-11PM": { cap: 40, booked: 0 }
+        }
+      },
+      cricket: {
+        name: "Box Cricket",
+        slots: {
+          "8-9PM": { cap: 28, booked: 0 },
+          "9-10PM": { cap: 28, booked: 0 },
+          "10-11PM": { cap: 28, booked: 0 }
+        }
+      },
+      paddleball: {
+        name: "Paddle Ball",
+        slots: {
+          "8-9PM": { cap: 8, booked: 0 },
+          "9-10PM": { cap: 8, booked: 0 },
+          "10-11PM": { cap: 8, booked: 0 }
+        }
+      }
+    };
+
+    var players = JSON.parse(localStorage.getItem('jito_players_v8') || "[]");
+    var inventory = JSON.parse(localStorage.getItem('jito_inventory_v8') || JSON.stringify(INITIAL_INVENTORY));
+    var nextMaleSeq = parseInt(localStorage.getItem('jito_male_seq_v8') || "1", 10);
+    var nextFemaleSeq = parseInt(localStorage.getItem('jito_female_seq_v8') || "1", 10);
+
+    var loggedInPlayer = null;
+    var playerSelections = { pickleball: null, cricket: null, paddleball: null };
+    var uploadedPhotoBase64 = "";
+
+    function saveState() {
+      localStorage.setItem('jito_players_v8', JSON.stringify(players));
+      localStorage.setItem('jito_inventory_v8', JSON.stringify(inventory));
+      localStorage.setItem('jito_male_seq_v8', nextMaleSeq.toString());
+      localStorage.setItem('jito_female_seq_v8', nextFemaleSeq.toString());
+    }
+
+    // Photo Upload Handler (Converts to Base64)
+    function handlePhotoUpload(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function(event) {
+        uploadedPhotoBase64 = event.target.result;
+        var preview = document.getElementById('signup-photo-preview');
+        var placeholder = document.getElementById('signup-photo-placeholder');
+        preview.src = uploadedPhotoBase64;
+        preview.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function switchAuthTab(tab) {
+      var loginForm = document.getElementById('form-login');
+      var signupForm = document.getElementById('form-signup');
+      var tabLogin = document.getElementById('tab-login');
+      var tabSignup = document.getElementById('tab-signup');
+
+      if (tab === 'login') {
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+        tabLogin.className = "pb-3 px-6 text-sm font-black border-b-2 border-[#2F2677] text-[#2F2677]";
+        tabSignup.className = "pb-3 px-6 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-700";
+      } else {
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+        tabSignup.className = "pb-3 px-6 text-sm font-black border-b-2 border-[#008F3D] text-[#008F3D]";
+        tabLogin.className = "pb-3 px-6 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-700";
+      }
+    }
+
+    function toggleGroupBookingUI(sportKey) {
+      var isChecked = document.getElementById('group-' + sportKey + '-toggle').checked;
+      var container = document.getElementById('group-' + sportKey + '-inputs');
+      if (isChecked) {
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+      }
+    }
+
+    // ================= CHANGE 2: RESET PASSWORD LOGIC =================
+    function openResetPasswordModal() {
+      document.getElementById('reset-identifier').value = '';
+      document.getElementById('reset-new-password').value = '';
+      document.getElementById('reset-confirm-password').value = '';
+      document.getElementById('reset-error-msg').classList.add('hidden');
+      document.getElementById('modal-reset-password').style.display = 'flex';
+    }
+
+    function closeResetPasswordModal() {
+      document.getElementById('modal-reset-password').style.display = 'none';
+    }
+
+    function handleResetPasswordSubmit(e) {
+      e.preventDefault();
+      var identifier = document.getElementById('reset-identifier').value.trim().toUpperCase();
+      var newPass = document.getElementById('reset-new-password').value;
+      var confirmPass = document.getElementById('reset-confirm-password').value;
+      var errBox = document.getElementById('reset-error-msg');
+      errBox.classList.add('hidden');
+
+      if (newPass !== confirmPass) {
+        errBox.innerText = "New passwords do not match.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      var player = players.find(function(p) {
+        return (p.id.toUpperCase() === identifier || p.mobile === identifier);
+      });
+
+      if (!player) {
+        errBox.innerText = "No player found with that Player ID or Mobile Number.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      // Update password
+      player.password = newPass;
+      saveState();
+      closeResetPasswordModal();
+      alert("Password updated successfully for " + player.name + " (" + player.id + ")! You can now log in.");
+    }
+
+    function handlePlayerSignup(e) {
+      e.preventDefault();
+      var errBox = document.getElementById('signup-error-msg');
+      errBox.classList.add('hidden');
+
+      if (!uploadedPhotoBase64) {
+        errBox.innerText = "Please upload a profile photo. It is compulsory for player identification.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      var mobile = document.getElementById('signup-mobile').value.trim();
+      var password = document.getElementById('signup-password').value;
+      var confirmPassword = document.getElementById('signup-confirm-password').value;
+
+      if (password !== confirmPassword) {
+        errBox.innerText = "Passwords do not match.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      var existing = players.find(function(p) { return p.mobile === mobile; });
+      if (existing) {
+        errBox.innerText = "Mobile number (+91 " + mobile + ") is already registered with Player ID: " + existing.id + ". Please log in.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      var gender = document.querySelector('input[name="signup_gender"]:checked').value;
+      var assignedId = "";
+      if (gender === "Male") {
+        assignedId = "MP" + nextMaleSeq;
+        nextMaleSeq += 1;
+      } else {
+        assignedId = "FP" + nextFemaleSeq;
+        nextFemaleSeq += 1;
+      }
+
+      var newPlayer = {
+        id: assignedId,
+        photo: uploadedPhotoBase64,
+        name: document.getElementById('signup-name').value.trim(),
+        mobile: mobile,
+        gender: gender,
+        age: document.getElementById('signup-age').value,
+        membership: document.getElementById('signup-membership').value,
+        freq_pickleball: (document.querySelector('input[name="freq_pickleball"]:checked') || {}).value || '',
+        freq_cricket: (document.querySelector('input[name="freq_cricket"]:checked') || {}).value || '',
+        freq_paddle: (document.querySelector('input[name="freq_paddle"]:checked') || {}).value || '',
+        password: password,
+        registeredAt: new Date().toLocaleString(),
+        booking: {
+          hasBooked: false,
+          pickleball_slot: null,
+          cricket_slot: null,
+          paddle_slot: null,
+          isGroup: false,
+          groupLead: null,
+          teamList: [],
+          matchResult: "Scheduled",
+          timestamp: null
+        },
+        // CHANGE 3: History of bookings & match results
+        history: []
+      };
+
+      players.push(newPlayer);
+      saveState();
+
+      document.getElementById('new-assigned-id').innerText = assignedId;
+      document.getElementById('signup-success-photo').src = uploadedPhotoBase64;
+      document.getElementById('modal-signup-success').style.display = 'flex';
+      loggedInPlayer = newPlayer;
+    }
+
+    function closeSignupSuccessModal() {
+      document.getElementById('modal-signup-success').style.display = 'none';
+      document.getElementById('form-signup').reset();
+      enterBookingPortal();
+    }
+
+    function handlePlayerLogin(e) {
+      e.preventDefault();
+      var identifier = document.getElementById('login-identifier').value.trim().toUpperCase();
+      var password = document.getElementById('login-password').value;
+      var errorDiv = document.getElementById('login-error-msg');
+      errorDiv.classList.add('hidden');
+
+      var player = players.find(function(p) { 
+        return (p.id.toUpperCase() === identifier || p.mobile === identifier); 
+      });
+
+      if (!player) {
+        errorDiv.innerText = "No player found with that Player ID or Mobile Number.";
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      if (player.password !== password) {
+        errorDiv.innerText = "Incorrect password. Please try again.";
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      loggedInPlayer = player;
+      enterBookingPortal();
+    }
+
+    function renderPlayerHistory() {
+      var tbody = document.getElementById('player-history-tbody');
+      tbody.innerHTML = '';
+
+      var historyItems = (loggedInPlayer.history && loggedInPlayer.history.length > 0) 
+        ? loggedInPlayer.history 
+        : (loggedInPlayer.booking && loggedInPlayer.booking.hasBooked ? [loggedInPlayer.booking] : []);
+
+      if (historyItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-slate-400">No match or booking records yet. Book a slot below!</td></tr>';
+        return;
+      }
+
+      historyItems.forEach(function(item) {
+        var row = document.createElement('tr');
+        var sportsChosen = [];
+        if (item.pickleball_slot) sportsChosen.push('Pickleball (' + item.pickleball_slot + ')');
+        if (item.cricket_slot) sportsChosen.push('Box Cricket (' + item.cricket_slot + ')');
+        if (item.paddle_slot) sportsChosen.push('Paddle Ball (' + item.paddle_slot + ')');
+
+        var squadText = item.teamList && item.teamList.length > 0 ? item.teamList.join(', ') : 'Individual';
+        var resultBadgeColor = 'bg-slate-100 text-slate-700';
+        var resText = item.matchResult || 'Scheduled';
+        if (resText.toLowerCase().includes('won') || resText.toLowerCase().includes('win')) resultBadgeColor = 'bg-emerald-100 text-emerald-800 font-bold';
+        else if (resText.toLowerCase().includes('lost') || resText.toLowerCase().includes('runner')) resultBadgeColor = 'bg-rose-100 text-rose-800 font-bold';
+        else if (resText.toLowerCase().includes('sched') || resText.toLowerCase().includes('upcom')) resultBadgeColor = 'bg-blue-100 text-blue-800';
+
+        row.innerHTML = '<td class="py-2.5 px-3 font-mono text-[11px]">' + (item.timestamp || 'N/A') + '</td>' +
+                        '<td class="py-2.5 px-3 font-bold text-slate-800">' + (sportsChosen.join(' • ') || 'N/A') + '</td>' +
+                        '<td class="py-2.5 px-3">' + (item.pickleball_slot || item.cricket_slot || item.paddle_slot || 'N/A') + '</td>' +
+                        '<td class="py-2.5 px-3 font-mono text-[11px]">' + squadText + '</td>' +
+                        '<td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Confirmed</span></td>' +
+                        '<td class="py-2.5 px-3"><span class="px-2 py-1 rounded text-xs ' + resultBadgeColor + '">' + resText + '</span></td>';
+        tbody.appendChild(row);
+      });
+    }
+
+    function enterBookingPortal() {
+      var refreshed = players.find(function(p) { return p.id === loggedInPlayer.id; });
+      if (refreshed) loggedInPlayer = refreshed;
+
+      document.getElementById('view-auth').style.display = 'none';
+      document.getElementById('view-booking').style.display = 'block';
+
+      document.getElementById('nav-user-profile').style.display = 'flex';
+      document.getElementById('nav-player-avatar').src = loggedInPlayer.photo || '';
+      document.getElementById('nav-player-id').innerText = loggedInPlayer.id;
+      document.getElementById('nav-player-name').innerText = loggedInPlayer.name;
+
+      document.getElementById('player-profile-photo').src = loggedInPlayer.photo || '';
+      document.getElementById('player-profile-id').innerText = loggedInPlayer.id;
+      document.getElementById('player-profile-name').innerText = loggedInPlayer.name;
+      document.getElementById('player-profile-mobile').innerText = "+91 " + loggedInPlayer.mobile;
+      document.getElementById('player-profile-age').innerText = loggedInPlayer.age;
+      document.getElementById('player-profile-membership').innerText = loggedInPlayer.membership;
+
+      var teamAlert = document.getElementById('player-team-booking-alert');
+      var teamDetails = document.getElementById('player-team-booking-details');
+
+      if (loggedInPlayer.booking && loggedInPlayer.booking.hasBooked) {
+        document.getElementById('player-current-booking-status').innerText = "Active Slots Reserved";
+        document.getElementById('player-current-booking-status').className = "text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200";
+        document.getElementById('btn-save-slot-text').innerText = "Update / Modify Slot Booking";
+
+        // Check if player was booked as part of a squad by someone else
+        if (loggedInPlayer.booking.groupLead && loggedInPlayer.booking.groupLead !== loggedInPlayer.id) {
+          teamAlert.classList.remove('hidden');
+          var bookedSportsList = [];
+          if (loggedInPlayer.booking.pickleball_slot) bookedSportsList.push('Pickleball (' + loggedInPlayer.booking.pickleball_slot + ')');
+          if (loggedInPlayer.booking.paddle_slot) bookedSportsList.push('Paddle Ball (' + loggedInPlayer.booking.paddle_slot + ')');
+
+          var squadNames = (loggedInPlayer.booking.teamList || []).join(', ');
+          teamDetails.innerHTML = '<div>• <strong>Booked by Team Captain:</strong> <span class="font-bold text-[#2F2677] font-mono">' + loggedInPlayer.booking.groupLead + '</span></div>' +
+                                  '<div>• <strong>Assigned Sport & Timing:</strong> <span class="font-bold text-emerald-700">' + bookedSportsList.join(', ') + '</span></div>' +
+                                  '<div>• <strong>Full Team Squad:</strong> ' + squadNames + '</div>' +
+                                  '<div class="text-[11px] text-indigo-700 mt-1 italic font-normal">* This slot is reserved for you. All overlapping hours across sports are locked below so you cannot be double-booked.</div>';
+        } else {
+          teamAlert.classList.add('hidden');
+        }
+
+        playerSelections = {
+          pickleball: loggedInPlayer.booking.pickleball_slot || null,
+          cricket: loggedInPlayer.booking.cricket_slot || null,
+          paddleball: loggedInPlayer.booking.paddle_slot || null
+        };
+      } else {
+        document.getElementById('player-current-booking-status').innerText = "No Active Slot Booked";
+        document.getElementById('player-current-booking-status').className = "text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200";
+        document.getElementById('btn-save-slot-text').innerText = "Confirm Slot Booking";
+        teamAlert.classList.add('hidden');
+        playerSelections = { pickleball: null, cricket: null, paddleball: null };
+      }
+
+      ['pickleball', 'cricket', 'paddleball'].forEach(function(k) {
+        var hasSlot = !!playerSelections[k];
+        var check = document.getElementById('check-' + k);
+        if (check) check.checked = hasSlot;
+        var slotsContainer = document.getElementById('slots-' + k);
+        var block = document.getElementById('block-' + k);
+
+        if (hasSlot) {
+          slotsContainer.classList.remove('hidden');
+          block.classList.add('bg-white', 'border-[#2F2677]', 'shadow-sm');
+          block.classList.remove('bg-slate-50');
+        } else {
+          slotsContainer.classList.add('hidden');
+          block.classList.remove('bg-white', 'border-[#2F2677]', 'shadow-sm');
+          block.classList.add('bg-slate-50');
+        }
+      });
+
+      renderAllSlots();
+      renderPlayerHistory();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function handleLogout() {
+      loggedInPlayer = null;
+      playerSelections = { pickleball: null, cricket: null, paddleball: null };
+      document.getElementById('view-booking').style.display = 'none';
+      document.getElementById('view-auth').style.display = 'block';
+      document.getElementById('nav-user-profile').style.display = 'none';
+      document.getElementById('form-login').reset();
+    }
+
+    function toggleSport(sportKey) {
+      var isChecked = document.getElementById('check-' + sportKey).checked;
+      var slotsContainer = document.getElementById('slots-' + sportKey);
+      var block = document.getElementById('block-' + sportKey);
+
+      if (isChecked) {
+        slotsContainer.classList.remove('hidden');
+        block.classList.add('bg-white', 'border-[#2F2677]', 'shadow-sm');
+        block.classList.remove('bg-slate-50');
+      } else {
+        slotsContainer.classList.add('hidden');
+        block.classList.remove('bg-white', 'border-[#2F2677]', 'shadow-sm');
+        block.classList.add('bg-slate-50');
+        playerSelections[sportKey] = null;
+      }
+      renderAllSlots();
+    }
+
+    function selectSlotForSport(sportKey, slotKey) {
+      if (playerSelections[sportKey] === slotKey) {
+        playerSelections[sportKey] = null;
+      } else {
+        playerSelections[sportKey] = slotKey;
+      }
+      renderAllSlots();
+    }
+
+    function isTimeSlotClaimedElsewhere(targetSport, slotKey) {
+      for (var sport in playerSelections) {
+        if (sport !== targetSport && playerSelections[sport] === slotKey) {
+          return inventory[sport].name;
+        }
+      }
+      return null;
+    }
+
+    function renderAllSlots() {
+      var isBookedByOther = (loggedInPlayer && loggedInPlayer.booking && loggedInPlayer.booking.hasBooked && loggedInPlayer.booking.groupLead && loggedInPlayer.booking.groupLead !== loggedInPlayer.id);
+
+      ['pickleball', 'cricket', 'paddleball'].forEach(function(sportKey) {
+        var grid = document.getElementById('grid-' + sportKey);
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        var slots = inventory[sportKey].slots;
+
+        Object.keys(slots).forEach(function(slotKey) {
+          var slotData = slots[slotKey];
+          var remaining = slotData.cap - slotData.booked;
+          var isCapacityFull = remaining <= 0;
+          var conflictingSport = isTimeSlotClaimedElsewhere(sportKey, slotKey);
+          var isChosen = playerSelections[sportKey] === slotKey;
+
+          // Check if this exact slot was booked for the player by their team captain
+          var isAssignedSquadSlot = isBookedByOther && (
+            (sportKey === 'pickleball' && loggedInPlayer.booking.pickleball_slot === slotKey) ||
+            (sportKey === 'paddleball' && loggedInPlayer.booking.paddle_slot === slotKey)
+          );
+
+          // Check if player is occupied at this time slot via squad booking in another sport
+          var isOccupiedBySquadInOtherSport = isBookedByOther && !isAssignedSquadSlot && (
+            (loggedInPlayer.booking.pickleball_slot === slotKey && sportKey !== 'pickleball') ||
+            (loggedInPlayer.booking.paddle_slot === slotKey && sportKey !== 'paddleball')
+          );
+
+          var div = document.createElement('div');
+
+          if (isAssignedSquadSlot) {
+            div.className = "p-3 rounded-xl border-2 border-indigo-500 bg-indigo-50/80 cursor-default select-none";
+            div.innerHTML = '<div class="flex items-center justify-between text-[11px] font-bold text-indigo-900 mb-1"><span><i class="fa-solid fa-users mr-1"></i> Squad Slot</span><span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-600 text-white font-bold">Confirmed</span></div><div class="font-black text-sm text-indigo-950">' + slotKey + '</div><div class="text-[10px] text-indigo-700 font-bold mt-1">Booked by ' + loggedInPlayer.booking.groupLead + '</div>';
+          } else if (isOccupiedBySquadInOtherSport) {
+            var occupyingSport = loggedInPlayer.booking.pickleball_slot === slotKey ? 'Pickleball' : 'Paddle Ball';
+            div.className = "p-3 rounded-xl border border-rose-200 bg-rose-50/70 text-rose-900 cursor-not-allowed select-none";
+            div.innerHTML = '<div class="flex items-center justify-between text-[11px] font-bold text-rose-700 mb-1"><span><i class="fa-solid fa-ban mr-1"></i> Time Conflict</span><span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-200 font-black">Occupied</span></div><div class="font-extrabold text-sm line-through text-slate-500">' + slotKey + '</div><div class="text-[10px] text-rose-800 font-semibold mt-1">Playing ' + occupyingSport + ' with ' + loggedInPlayer.booking.groupLead + '</div>';
+          } else if (conflictingSport) {
+            div.className = "p-3 rounded-xl border border-amber-200 bg-amber-50/70 text-amber-900 cursor-not-allowed select-none";
+            div.innerHTML = '<div class="flex items-center justify-between text-[11px] font-bold text-amber-700 mb-1"><span><i class="fa-solid fa-clock-rotate-left mr-1"></i> Time Conflict</span><span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-200">Booked</span></div><div class="font-extrabold text-sm line-through text-slate-500">' + slotKey + '</div><div class="text-[10px] text-amber-800 font-semibold mt-1">Chosen for ' + conflictingSport + '</div>';
+          } else if (isCapacityFull && !isChosen) {
+            div.className = "p-3 rounded-xl border border-slate-200 bg-slate-100 opacity-60 cursor-not-allowed select-none";
+            div.innerHTML = '<div class="flex items-center justify-between text-slate-400 mb-1"><span class="text-[11px] font-bold uppercase"><i class="fa-solid fa-lock mr-1"></i> Blinded</span><span class="text-[9px] font-black uppercase px-1.5 py-0.5 bg-slate-200 rounded">Full</span></div><div class="font-black text-sm text-slate-400 line-through">' + slotKey + '</div><div class="text-[10px] text-rose-500 font-bold mt-1">0 Spots Left</div>';
+          } else {
+            div.className = "p-3 rounded-xl border-2 cursor-pointer transition-all " + (isChosen ? 'border-[#008F3D] bg-emerald-50 ring-2 ring-[#008F3D]' : 'border-slate-200 hover:border-slate-400 bg-white');
+            div.onclick = function() { selectSlotForSport(sportKey, slotKey); };
+            div.innerHTML = '<div class="flex items-center justify-between text-slate-500 mb-1"><span class="text-[11px] font-bold uppercase"><i class="fa-regular fa-clock mr-1"></i> Time</span><span class="text-[9px] font-black uppercase px-1.5 py-0.5 ' + (isChosen ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-800') + ' rounded">' + (isChosen ? 'Selected' : remaining + ' Left') + '</span></div><div class="font-black text-sm text-slate-900">' + slotKey + '</div><div class="text-[10px] text-emerald-600 font-semibold mt-1">' + slotData.booked + ' / ' + slotData.cap + ' filled</div>';
+          }
+          grid.appendChild(div);
+        });
+      });
+    }
+
+    // CHANGE 1: STRICT SQUAD VALIDATION
+    // Checks if any teammate is already booked in ANY sport during the selected slotKey
+    function getGroupTeammates(sportKey, selectedSlotKey) {
+      var isGroup = document.getElementById('group-' + sportKey + '-toggle')?.checked;
+      if (!isGroup) return [];
+
+      var prefix = sportKey === 'pickleball' ? 'group-pb-' : 'group-paddle-';
+      var rawIds = [
+        document.getElementById(prefix + 'p2')?.value.trim().toUpperCase(),
+        document.getElementById(prefix + 'p3')?.value.trim().toUpperCase(),
+        document.getElementById(prefix + 'p4')?.value.trim().toUpperCase()
+      ].filter(Boolean);
+
+      var validTeammates = [];
+      for (var i = 0; i < rawIds.length; i++) {
+        var tid = rawIds[i];
+        if (tid === loggedInPlayer.id.toUpperCase()) {
+          alert("You do not need to add yourself as a teammate in the group fields.");
+          return null;
+        }
+        var found = players.find(function(p) { return p.id.toUpperCase() === tid; });
+        if (!found) {
+          alert("Teammate Player ID: " + tid + " was not found in the registered player database. Please ensure they sign up first.");
+          return null;
+        }
+        if (validTeammates.includes(found.id)) {
+          alert("Duplicate teammate ID entered: " + tid);
+          return null;
+        }
+
+        // CRITICAL CHECK: Is teammate already occupied at this time slot?
+        if (found.booking && found.booking.hasBooked) {
+          var b = found.booking;
+          if (b.pickleball_slot === selectedSlotKey || b.cricket_slot === selectedSlotKey || b.paddle_slot === selectedSlotKey) {
+            alert("COLLISION DETECTED:\nPlayer " + found.name + " (" + found.id + ") is already booked at " + selectedSlotKey + "!\n\nThey cannot be added to your squad for this time slot.");
+            return null;
+          }
+        }
+
+        validTeammates.push(found.id);
+      }
+      return validTeammates;
+    }
+
+    function handleSlotReservation(e) {
+      e.preventDefault();
+
+      var selectedSports = [];
+      ['pickleball', 'cricket', 'paddleball'].forEach(function(k) {
+        if (document.getElementById('check-' + k).checked) {
+          selectedSports.push(k);
+        }
+      });
+
+      if (selectedSports.length === 0) {
+        alert("Please select at least one sport to play.");
+        return;
+      }
+
+      for (var i = 0; i < selectedSports.length; i++) {
+        var s = selectedSports[i];
+        if (!playerSelections[s]) {
+          alert("Please select an available time slot for " + inventory[s].name + ".");
+          return;
+        }
+      }
+
+      // Group booking validation for Pickleball and Paddle Ball
+      var pbTeammates = [];
+      if (selectedSports.includes('pickleball')) {
+        pbTeammates = getGroupTeammates('pickleball', playerSelections.pickleball);
+        if (pbTeammates === null) return;
+      }
+
+      var paddleTeammates = [];
+      if (selectedSports.includes('paddleball')) {
+        paddleTeammates = getGroupTeammates('paddleball', playerSelections.paddleball);
+        if (paddleTeammates === null) return;
+      }
+
+      var pbSpotsNeeded = 1 + pbTeammates.length;
+      var paddleSpotsNeeded = 1 + paddleTeammates.length;
+      var cricketSpotsNeeded = 1;
+
+      // Release previous booking if modifying
+      if (loggedInPlayer.booking && loggedInPlayer.booking.hasBooked) {
+        var prev = loggedInPlayer.booking;
+        var prevPbCount = 1 + (prev.pbTeammates ? prev.pbTeammates.length : 0);
+        var prevPaddleCount = 1 + (prev.paddleTeammates ? prev.paddleTeammates.length : 0);
+
+        if (prev.pickleball_slot && inventory.pickleball.slots[prev.pickleball_slot]) {
+          inventory.pickleball.slots[prev.pickleball_slot].booked = Math.max(0, inventory.pickleball.slots[prev.pickleball_slot].booked - prevPbCount);
+        }
+        if (prev.cricket_slot && inventory.cricket.slots[prev.cricket_slot]) {
+          inventory.cricket.slots[prev.cricket_slot].booked = Math.max(0, inventory.cricket.slots[prev.cricket_slot].booked - 1);
+        }
+        if (prev.paddle_slot && inventory.paddleball.slots[prev.paddle_slot]) {
+          inventory.paddleball.slots[prev.paddle_slot].booked = Math.max(0, inventory.paddleball.slots[prev.paddle_slot].booked - prevPaddleCount);
+        }
+      }
+
+      // Verify slot capacity against group size
+      if (selectedSports.includes('pickleball')) {
+        var pbSlot = playerSelections.pickleball;
+        var pbRemaining = inventory.pickleball.slots[pbSlot].cap - inventory.pickleball.slots[pbSlot].booked;
+        if (pbRemaining < pbSpotsNeeded) {
+          alert("Not enough spots in Pickleball " + pbSlot + " for your squad (" + pbSpotsNeeded + " spots needed, only " + pbRemaining + " available).");
+          renderAllSlots();
+          return;
+        }
+      }
+
+      if (selectedSports.includes('paddleball')) {
+        var pdSlot = playerSelections.paddleball;
+        var pdRemaining = inventory.paddleball.slots[pdSlot].cap - inventory.paddleball.slots[pdSlot].booked;
+        if (pdRemaining < paddleSpotsNeeded) {
+          alert("Not enough spots in Paddle Ball " + pdSlot + " for your squad (" + paddleSpotsNeeded + " spots needed, only " + pdRemaining + " available).");
+          renderAllSlots();
+          return;
+        }
+      }
+
+      if (selectedSports.includes('cricket')) {
+        var crSlot = playerSelections.cricket;
+        var crRemaining = inventory.cricket.slots[crSlot].cap - inventory.cricket.slots[crSlot].booked;
+        if (crRemaining < cricketSpotsNeeded) {
+          alert("The " + crSlot + " slot for Box Cricket is full.");
+          renderAllSlots();
+          return;
+        }
+      }
+
+      // DEDUCT FROM INVENTORY
+      if (selectedSports.includes('pickleball')) {
+        inventory.pickleball.slots[playerSelections.pickleball].booked += pbSpotsNeeded;
+      }
+      if (selectedSports.includes('paddleball')) {
+        inventory.paddleball.slots[playerSelections.paddleball].booked += paddleSpotsNeeded;
+      }
+      if (selectedSports.includes('cricket')) {
+        inventory.cricket.slots[playerSelections.cricket].booked += cricketSpotsNeeded;
+      }
+
+      // Update Captain Booking
+      var fullSquadList = [loggedInPlayer.id].concat(pbTeammates).concat(paddleTeammates);
+      fullSquadList = Array.from(new Set(fullSquadList));
+
+      var currentTimestamp = new Date().toLocaleString();
+      var bookingRecord = {
+        hasBooked: true,
+        pickleball_slot: playerSelections.pickleball || '',
+        cricket_slot: playerSelections.cricket || '',
+        paddle_slot: playerSelections.paddleball || '',
+        isGroup: (pbTeammates.length > 0 || paddleTeammates.length > 0),
+        groupLead: loggedInPlayer.id,
+        pbTeammates: pbTeammates,
+        paddleTeammates: paddleTeammates,
+        teamList: fullSquadList,
+        matchResult: loggedInPlayer.booking?.matchResult || "Scheduled",
+        timestamp: currentTimestamp
+      };
+
+      loggedInPlayer.booking = bookingRecord;
+      if (!loggedInPlayer.history) loggedInPlayer.history = [];
+      loggedInPlayer.history.unshift(bookingRecord);
+
+      var idx = players.findIndex(function(p) { return p.id === loggedInPlayer.id; });
+      if (idx !== -1) players[idx] = loggedInPlayer;
+
+      // AUTOMATICALLY PROPAGATE TO ALL TEAMMATES' DASHBOARDS
+      var allTeammateIds = Array.from(new Set(pbTeammates.concat(paddleTeammates)));
+      allTeammateIds.forEach(function(tid) {
+        var tPlayer = players.find(function(p) { return p.id === tid; });
+        if (tPlayer) {
+          var tRecord = {
+            hasBooked: true,
+            pickleball_slot: pbTeammates.includes(tid) ? playerSelections.pickleball : (tPlayer.booking?.pickleball_slot || ''),
+            paddle_slot: paddleTeammates.includes(tid) ? playerSelections.paddleball : (tPlayer.booking?.paddle_slot || ''),
+            cricket_slot: tPlayer.booking?.cricket_slot || '',
+            isGroup: true,
+            groupLead: loggedInPlayer.id,
+            teamList: fullSquadList,
+            matchResult: tPlayer.booking?.matchResult || "Scheduled",
+            timestamp: currentTimestamp
+          };
+          tPlayer.booking = tRecord;
+          if (!tPlayer.history) tPlayer.history = [];
+          tPlayer.history.unshift(tRecord);
+        }
+      });
+
+      saveState();
+
+      // Show Confirmation Pass Modal
+      document.getElementById('pass-player-photo').src = loggedInPlayer.photo || '';
+      document.getElementById('pass-player-id').innerText = loggedInPlayer.id;
+      document.getElementById('pass-player-name').innerText = loggedInPlayer.name;
+      var summaryDiv = document.getElementById('pass-sports-summary');
+      summaryDiv.innerHTML = '';
+      if (loggedInPlayer.booking.pickleball_slot) {
+        summaryDiv.innerHTML += '<div class="text-[#2F2677]">• Pickleball: <strong>' + loggedInPlayer.booking.pickleball_slot + '</strong>' + (pbTeammates.length > 0 ? ' (Squad: ' + fullSquadList.join(', ') + ' - ' + pbSpotsNeeded + ' spots deducted)' : '') + '</div>';
+      }
+      if (loggedInPlayer.booking.cricket_slot) {
+        summaryDiv.innerHTML += '<div class="text-[#E20111]">• Box Cricket: <strong>' + loggedInPlayer.booking.cricket_slot + '</strong></div>';
+      }
+      if (loggedInPlayer.booking.paddle_slot) {
+        summaryDiv.innerHTML += '<div class="text-[#008F3D]">• Paddle Ball: <strong>' + loggedInPlayer.booking.paddle_slot + '</strong>' + (paddleTeammates.length > 0 ? ' (Squad: ' + fullSquadList.join(', ') + ' - ' + paddleSpotsNeeded + ' spots deducted)' : '') + '</div>';
+      }
+
+      document.getElementById('modal-pass').style.display = 'flex';
+      enterBookingPortal();
+    }
+
+    function closeModal() {
+      document.getElementById('modal-pass').style.display = 'none';
+    }
+
+    function openAdminAuth() {
+      document.getElementById('admin-pin-input').value = '';
+      document.getElementById('admin-auth-error').classList.add('hidden');
+      document.getElementById('modal-admin-auth').style.display = 'flex';
+    }
+
+    function closeAdminAuth() {
+      document.getElementById('modal-admin-auth').style.display = 'none';
+    }
+
+    function verifyAdminPin(e) {
+      e.preventDefault();
+      var enteredPin = document.getElementById('admin-pin-input').value;
+      if (enteredPin === currentAdminPin) {
+        closeAdminAuth();
+        document.getElementById('view-auth').style.display = 'none';
+        document.getElementById('view-booking').style.display = 'none';
+        document.getElementById('view-admin').style.display = 'block';
+        updateAdminDashboard();
+      } else {
+        document.getElementById('admin-auth-error').classList.remove('hidden');
+      }
+    }
+
+    function logoutAdmin() {
+      document.getElementById('view-admin').style.display = 'none';
+      if (loggedInPlayer) {
+        document.getElementById('view-booking').style.display = 'block';
+      } else {
+        document.getElementById('view-auth').style.display = 'block';
+      }
+    }
+
+    function openChangePinModal() {
+      document.getElementById('pin-current').value = '';
+      document.getElementById('pin-new').value = '';
+      document.getElementById('pin-confirm').value = '';
+      document.getElementById('change-pin-error').classList.add('hidden');
+      document.getElementById('modal-change-pin').style.display = 'flex';
+    }
+
+    function closeChangePinModal() {
+      document.getElementById('modal-change-pin').style.display = 'none';
+    }
+
+    function handlePinChange(e) {
+      e.preventDefault();
+      var current = document.getElementById('pin-current').value;
+      var newPin = document.getElementById('pin-new').value;
+      var confirmPin = document.getElementById('pin-confirm').value;
+      var errBox = document.getElementById('change-pin-error');
+
+      if (current !== currentAdminPin) {
+        errBox.innerText = 'Current PIN is incorrect.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      if (newPin !== confirmPin) {
+        errBox.innerText = 'New PIN and Confirm PIN do not match.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      currentAdminPin = newPin;
+      localStorage.setItem('jito_admin_pin', newPin);
+      closeChangePinModal();
+      alert('Admin PIN updated successfully!');
+    }
+
+    function updateSlotCapacity(sportKey, slotKey, newCapValue) {
+      var val = parseInt(newCapValue, 10);
+      if (isNaN(val) || val < 0) return;
+      inventory[sportKey].slots[slotKey].cap = val;
+      saveState();
+      renderAllSlots();
+      updateAdminDashboard();
+    }
+
+    // CHANGE 3: ADMIN MATCH RESULT UPDATE LOGIC
+    function updateMatchResult(playerId, newResult) {
+      var player = players.find(function(p) { return p.id === playerId; });
+      if (player && player.booking) {
+        player.booking.matchResult = newResult;
+        if (player.history && player.history.length > 0) {
+          player.history[0].matchResult = newResult;
+        }
+        saveState();
+        alert("Match result updated to '" + newResult + "' for " + player.name + " (" + player.id + ").");
+        updateAdminDashboard();
+      }
+    }
+
+    function updateAdminDashboard() {
+      var tbody = document.getElementById('admin-players-tbody');
+      tbody.innerHTML = '';
+
+      if (players.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="py-4 text-center text-slate-400">No players registered yet.</td></tr>';
+      } else {
+        players.forEach(function(p) {
+          var row = document.createElement('tr');
+          var isBooked = p.booking && p.booking.hasBooked;
+          var photoHtml = p.photo ? '<img src="' + p.photo + '" class="w-7 h-7 rounded-full object-cover border border-slate-300" />' : '<span class="text-slate-300">-</span>';
+          var currResult = (p.booking && p.booking.matchResult) ? p.booking.matchResult : 'Scheduled';
+
+          row.innerHTML = '<td class="py-2.5 px-3">' + photoHtml + '</td>' +
+                          '<td class="py-2.5 px-3 font-mono font-black ' + (p.gender === 'Male' ? 'text-[#2F2677]' : 'text-pink-600') + '">' + p.id + '</td>' +
+                          '<td class="py-2.5 px-3 font-bold text-slate-900">' + p.name + '</td>' +
+                          '<td class="py-2.5 px-3 font-mono">' + p.mobile + '</td>' +
+                          '<td class="py-2.5 px-3">' + (isBooked && p.booking.pickleball_slot ? '<span class="px-2 py-0.5 rounded bg-indigo-50 text-[#2F2677] font-bold">' + p.booking.pickleball_slot + '</span>' : '<span class="text-slate-300">-</span>') + '</td>' +
+                          '<td class="py-2.5 px-3">' + (isBooked && p.booking.cricket_slot ? '<span class="px-2 py-0.5 rounded bg-rose-50 text-[#E20111] font-bold">' + p.booking.cricket_slot + '</span>' : '<span class="text-slate-300">-</span>') + '</td>' +
+                          '<td class="py-2.5 px-3">' + (isBooked && p.booking.paddle_slot ? '<span class="px-2 py-0.5 rounded bg-emerald-50 text-[#008F3D] font-bold">' + p.booking.paddle_slot + '</span>' : '<span class="text-slate-300">-</span>') + '</td>' +
+                          '<td class="py-2.5 px-3"><input type="text" id="res-input-' + p.id + '" value="' + currResult + '" placeholder="e.g. Won 11-7 / Lost / Scheduled" class="w-36 px-2 py-1 rounded border border-slate-300 text-xs font-semibold focus:ring-1 focus:ring-[#2F2677]" /></td>' +
+                          '<td class="py-2.5 px-3"><button type="button" onclick="updateMatchResult(\'' + p.id + '\', document.getElementById(\'res-input-' + p.id + '\').value)" class="px-2.5 py-1 bg-[#2F2677] text-white rounded-lg text-[11px] font-bold hover:bg-[#231b61]">Save Result</button></td>';
+          tbody.appendChild(row);
+        });
+      }
+
+      var tableDiv = document.getElementById('admin-inventory-table');
+      var html = '<table class="w-full text-xs text-left"><thead><tr class="border-b text-slate-500"><th class="pb-2">Sport</th><th class="pb-2">Time Slot</th><th class="pb-2">Capacity</th><th class="pb-2">Booked</th><th class="pb-2">Available</th><th class="pb-2">Status</th></tr></thead><tbody class="divide-y divide-slate-100">';
+
+      Object.keys(inventory).forEach(function(sKey) {
+        var sport = inventory[sKey];
+        Object.keys(sport.slots).forEach(function(slotKey) {
+          var data = sport.slots[slotKey];
+          var remaining = data.cap - data.booked;
+          var isFull = remaining <= 0;
+          html += '<tr><td class="py-2.5 font-bold">' + sport.name + '</td><td class="py-2.5">' + slotKey + '</td><td class="py-2.5"><input type="number" min="0" value="' + data.cap + '" onchange="updateSlotCapacity(\'' + sKey + '\', \'' + slotKey + '\', this.value)" class="w-16 px-2 py-1 rounded border border-slate-300 text-xs font-bold" /></td><td class="py-2.5 font-bold">' + data.booked + '</td><td class="py-2.5 font-bold ' + (remaining <= 0 ? 'text-rose-600' : 'text-emerald-600') + '">' + remaining + '</td><td class="py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-black ' + (isFull ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-800') + '">' + (isFull ? 'BLINDED (FULL)' : 'OPEN') + '</span></td></tr>';
+        });
+      });
+      html += '</tbody></table>';
+      tableDiv.innerHTML = html;
+    }
+
+    function exportFullMasterCSV() {
+      if (players.length === 0) {
+        alert('No registered players to export.');
+        return;
+      }
+
+      var headers = ["Player ID", "Sign-Up Date", "Full Name", "Mobile Number", "Gender", "Age Group", "Membership", "Frequency PB", "Frequency Cricket", "Frequency Paddle", "Has Active Booking", "Group Booking Lead", "PB Slot", "Cricket Slot", "Paddle Slot", "Squad Members", "Match Result", "Booking Timestamp"];
+      var csv = headers.join(",") + "\n";
+
+      players.forEach(function(p) {
+        var b = p.booking || {};
+        var row = [
+          '"' + p.id + '"',
+          '"' + p.registeredAt + '"',
+          '"' + p.name + '"',
+          '"' + p.mobile + '"',
+          '"' + p.gender + '"',
+          '"' + p.age + '"',
+          '"' + p.membership + '"',
+          '"' + p.freq_pickleball + '"',
+          '"' + p.freq_cricket + '"',
+          '"' + p.freq_paddle + '"',
+          '"' + (b.hasBooked ? 'YES' : 'NO') + '"',
+          '"' + (b.groupLead || 'Self') + '"',
+          '"' + (b.pickleball_slot || '') + '"',
+          '"' + (b.cricket_slot || '') + '"',
+          '"' + (b.paddle_slot || '') + '"',
+          '"' + ((b.teamList || []).join('; ')) + '"',
+          '"' + (b.matchResult || 'Scheduled') + '"',
+          '"' + (b.timestamp || '') + '"'
+        ];
+        csv += row.join(",") + "\n";
+      });
+
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      var url = window.URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = "JITO_Players_Master_Database_" + Date.now() + ".csv";
+      a.click();
+    }
+  </script>
+</body>
+</html>
