@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JITO Ahmedabad Multi-Sports Registration</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     :root {
@@ -45,6 +46,13 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <!-- Supabase Cloud Sync Status Badge -->
+        <button type="button" onclick="openSupabaseConfigModal()" id="supabase-status-btn" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[11px] font-bold text-slate-600 transition-all flex items-center gap-1.5">
+          <span id="supabase-status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="supabase-status-text">Local Mode</span>
+          <i class="fa-solid fa-cloud text-slate-400 text-xs"></i>
+        </button>
+
         <div id="nav-user-profile" style="display:none;" class="items-center gap-2">
           <img id="nav-player-avatar" src="" alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-slate-300 shadow-sm" />
           <div class="text-right hidden sm:block">
@@ -594,6 +602,51 @@
     </div>
   </div>
 
+  <!-- Supabase Cloud Configuration Modal -->
+  <div id="modal-supabase-config" style="display:none;" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-cloud"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-slate-900">Supabase Cloud Database</h3>
+            <p class="text-[11px] text-slate-500">Sync all registrations & bookings in real time</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeSupabaseConfigModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSupabaseConfigSave(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Supabase Project URL</label>
+          <input type="url" id="sb-input-url" placeholder="https://xyzcompany.supabase.co" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 font-mono focus:ring-2 focus:ring-[#2F2677]" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Supabase Anon / Public API Key</label>
+          <input type="password" id="sb-input-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI..." class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 font-mono focus:ring-2 focus:ring-[#2F2677]" />
+        </div>
+        <p id="sb-config-error" class="text-xs text-rose-600 font-bold hidden"></p>
+        <p id="sb-config-success" class="text-xs text-emerald-600 font-bold hidden"></p>
+
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-1">
+          <div class="font-bold text-slate-800">Quick Setup Instructions:</div>
+          <div>1. Run the SQL script from <code class="bg-white px-1 border rounded text-[#2F2677]">supabase_schema.sql</code> in your Supabase SQL Editor.</div>
+          <div>2. Paste your <strong>Project URL</strong> and <strong>Anon Key</strong> above (from Supabase -> Project Settings -> API).</div>
+          <div>3. Click Save & Connect. All existing local data will auto-sync to Supabase!</div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeSupabaseConfigModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-600">Cancel</button>
+          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-[#2F2677] hover:bg-[#231b61] text-white text-xs font-bold shadow-sm">Save & Connect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     var currentAdminPin = localStorage.getItem('jito_admin_pin') || "1926";
 
@@ -633,11 +686,282 @@
     var playerSelections = { pickleball: null, cricket: null, paddleball: null };
     var uploadedPhotoBase64 = "";
 
+    // ================= SUPABASE CLOUD SYNC ENGINE =================
+    var SUPABASE_URL = localStorage.getItem('jito_supabase_url') || "";
+    var SUPABASE_KEY = localStorage.getItem('jito_supabase_key') || "";
+    var supabaseClient = null;
+
+    function cleanSupabaseUrl(rawUrl) {
+      if (!rawUrl) return "";
+      var u = rawUrl.trim();
+      // Ensure protocol
+      if (!/^https?:\/\//i.test(u)) {
+        u = 'https://' + u;
+      }
+      try {
+        var parsed = new URL(u);
+        // Supabase URL must be origin only: https://<project-ref>.supabase.co
+        return parsed.origin;
+      } catch (err) {
+        return u.replace(/\/+$/, '');
+      }
+    }
+
+    function initSupabase() {
+      var cleanedUrl = cleanSupabaseUrl(SUPABASE_URL);
+      if (cleanedUrl && SUPABASE_KEY && window.supabase) {
+        try {
+          supabaseClient = window.supabase.createClient(cleanedUrl, SUPABASE_KEY);
+          updateSupabaseBadge('connecting');
+          fetchFromSupabase();
+          listenToSupabaseRealtime();
+        } catch (err) {
+          console.error("Supabase init error:", err);
+          updateSupabaseBadge('error');
+        }
+      } else {
+        updateSupabaseBadge('local');
+      }
+    }
+
+    function updateSupabaseBadge(status) {
+      var dot = document.getElementById('supabase-status-dot');
+      var text = document.getElementById('supabase-status-text');
+      if (!dot || !text) return;
+
+      if (status === 'connected') {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+        text.innerText = "Supabase Connected";
+        text.className = "text-emerald-700";
+      } else if (status === 'connecting') {
+        dot.className = "w-2 h-2 rounded-full bg-amber-400";
+        text.innerText = "Connecting...";
+        text.className = "text-amber-700";
+      } else if (status === 'error') {
+        dot.className = "w-2 h-2 rounded-full bg-rose-500";
+        text.innerText = "Connection Failed";
+        text.className = "text-rose-700";
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-slate-400";
+        text.innerText = "Local Mode";
+        text.className = "text-slate-600";
+      }
+    }
+
+    function openSupabaseConfigModal() {
+      document.getElementById('sb-input-url').value = SUPABASE_URL;
+      document.getElementById('sb-input-key').value = SUPABASE_KEY;
+      document.getElementById('sb-config-error').classList.add('hidden');
+      document.getElementById('sb-config-success').classList.add('hidden');
+      document.getElementById('modal-supabase-config').style.display = 'flex';
+    }
+
+    function closeSupabaseConfigModal() {
+      document.getElementById('modal-supabase-config').style.display = 'none';
+    }
+
+    async function handleSupabaseConfigSave(e) {
+      e.preventDefault();
+      var rawUrl = document.getElementById('sb-input-url').value.trim();
+      var key = document.getElementById('sb-input-key').value.trim();
+      var errBox = document.getElementById('sb-config-error');
+      var successBox = document.getElementById('sb-config-success');
+      errBox.classList.add('hidden');
+      successBox.classList.add('hidden');
+
+      if (!rawUrl || !key) {
+        errBox.innerText = "Please provide both Supabase Project URL and Anon API Key.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      var url = cleanSupabaseUrl(rawUrl);
+
+      // Warn if user pasted dashboard URL instead of API project URL
+      if (url.includes('supabase.com/dashboard')) {
+        errBox.innerText = "You entered the Supabase Dashboard URL. Please enter the Project URL found under Project Settings -> API (e.g. https://abcdefghijklm.supabase.co).";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        var testClient = window.supabase.createClient(url, key);
+        var res = await testClient.from('jito_players').select('id').limit(1);
+        if (res.error) throw res.error;
+
+        SUPABASE_URL = url;
+        SUPABASE_KEY = key;
+        localStorage.setItem('jito_supabase_url', url);
+        localStorage.setItem('jito_supabase_key', key);
+        supabaseClient = testClient;
+
+        successBox.innerText = "Connected to Supabase! Syncing current data...";
+        successBox.classList.remove('hidden');
+        updateSupabaseBadge('connected');
+
+        // Migrate local state to Supabase
+        await syncFullStateToSupabase();
+        await fetchFromSupabase();
+
+        setTimeout(function() {
+          closeSupabaseConfigModal();
+        }, 1200);
+      } catch (err) {
+        console.error("Supabase connection error:", err);
+        errBox.innerText = "Connection error: " + (err.message || "Failed to query jito_players table. Have you run the supabase_schema.sql script in Supabase?");
+        errBox.classList.remove('hidden');
+        updateSupabaseBadge('error');
+      }
+    }
+
+    async function fetchFromSupabase() {
+      if (!supabaseClient) return;
+      try {
+        // Fetch players
+        var pRes = await supabaseClient.from('jito_players').select('*');
+        if (!pRes.error && pRes.data && pRes.data.length > 0) {
+          players = pRes.data.map(function(row) {
+            return {
+              id: row.id,
+              name: row.name,
+              mobile: row.mobile,
+              gender: row.gender,
+              age: row.age,
+              membership: row.membership,
+              password: row.password,
+              photo: row.photo,
+              registeredAt: row.registered_at,
+              freq_pickleball: row.freq_pickleball,
+              freq_cricket: row.freq_cricket,
+              freq_paddle: row.freq_paddle,
+              booking: row.booking || { hasBooked: false },
+              history: row.history || []
+            };
+          });
+          localStorage.setItem('jito_players_v8', JSON.stringify(players));
+        }
+
+        // Fetch app state (inventory & sequences)
+        var sRes = await supabaseClient.from('jito_app_state').select('*');
+        if (!sRes.error && sRes.data) {
+          sRes.data.forEach(function(row) {
+            if (row.key === 'inventory' && row.value) {
+              inventory = row.value;
+              localStorage.setItem('jito_inventory_v8', JSON.stringify(inventory));
+            } else if (row.key === 'nextMaleSeq' && row.value !== undefined) {
+              nextMaleSeq = parseInt(row.value, 10);
+              localStorage.setItem('jito_male_seq_v8', nextMaleSeq.toString());
+            } else if (row.key === 'nextFemaleSeq' && row.value !== undefined) {
+              nextFemaleSeq = parseInt(row.value, 10);
+              localStorage.setItem('jito_female_seq_v8', nextFemaleSeq.toString());
+            }
+          });
+        }
+
+        updateSupabaseBadge('connected');
+        if (typeof renderAllSlots === 'function') renderAllSlots();
+        if (typeof updateAdminDashboard === 'function') updateAdminDashboard();
+        if (loggedInPlayer) {
+          var updatedSelf = players.find(function(p) { return p.id === loggedInPlayer.id; });
+          if (updatedSelf) {
+            loggedInPlayer = updatedSelf;
+            if (typeof renderPlayerHistory === 'function') renderPlayerHistory();
+          }
+        }
+      } catch (err) {
+        console.error("Supabase fetch error:", err);
+      }
+    }
+
+    function listenToSupabaseRealtime() {
+      if (!supabaseClient) return;
+      try {
+        supabaseClient.channel('jito-realtime-channel')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'jito_players' }, function() {
+            fetchFromSupabase();
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'jito_app_state' }, function() {
+            fetchFromSupabase();
+          })
+          .subscribe();
+      } catch (err) {
+        console.warn("Realtime subscription note:", err);
+      }
+    }
+
+    async function syncPlayerToSupabase(player) {
+      if (!supabaseClient || !player) return;
+      try {
+        var row = {
+          id: player.id,
+          name: player.name,
+          mobile: player.mobile,
+          gender: player.gender,
+          age: player.age,
+          membership: player.membership,
+          password: player.password,
+          photo: player.photo,
+          registered_at: player.registeredAt,
+          freq_pickleball: player.freq_pickleball,
+          freq_cricket: player.freq_cricket,
+          freq_paddle: player.freq_paddle,
+          booking: player.booking || { hasBooked: false },
+          history: player.history || [],
+          updated_at: new Date().toISOString()
+        };
+        await supabaseClient.from('jito_players').upsert(row);
+      } catch (err) {
+        console.error("Error upserting player to Supabase:", err);
+      }
+    }
+
+    async function syncFullStateToSupabase() {
+      if (!supabaseClient) return;
+      try {
+        if (players.length > 0) {
+          var rows = players.map(function(p) {
+            return {
+              id: p.id,
+              name: p.name,
+              mobile: p.mobile,
+              gender: p.gender,
+              age: p.age,
+              membership: p.membership,
+              password: p.password,
+              photo: p.photo,
+              registered_at: p.registeredAt,
+              freq_pickleball: p.freq_pickleball,
+              freq_cricket: p.freq_cricket,
+              freq_paddle: p.freq_paddle,
+              booking: p.booking || { hasBooked: false },
+              history: p.history || [],
+              updated_at: new Date().toISOString()
+            };
+          });
+          await supabaseClient.from('jito_players').upsert(rows);
+        }
+
+        await supabaseClient.from('jito_app_state').upsert([
+          { key: 'inventory', value: inventory, updated_at: new Date().toISOString() },
+          { key: 'nextMaleSeq', value: nextMaleSeq, updated_at: new Date().toISOString() },
+          { key: 'nextFemaleSeq', value: nextFemaleSeq, updated_at: new Date().toISOString() }
+        ]);
+      } catch (err) {
+        console.error("Error full state sync to Supabase:", err);
+      }
+    }
+
     function saveState() {
+      // 1. Keep fast local storage cache
       localStorage.setItem('jito_players_v8', JSON.stringify(players));
       localStorage.setItem('jito_inventory_v8', JSON.stringify(inventory));
       localStorage.setItem('jito_male_seq_v8', nextMaleSeq.toString());
       localStorage.setItem('jito_female_seq_v8', nextFemaleSeq.toString());
+
+      // 2. Asynchronously replicate to Supabase
+      if (supabaseClient) {
+        syncFullStateToSupabase();
+      }
     }
 
     // Photo Upload Handler (Converts to Base64)
@@ -1446,6 +1770,11 @@
       a.download = "JITO_Players_Master_Database_" + Date.now() + ".csv";
       a.click();
     }
+
+    // Initialize Supabase on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      initSupabase();
+    });
   </script>
 </body>
 </html>
