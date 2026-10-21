@@ -46,13 +46,6 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <!-- Supabase Cloud Sync Status Badge -->
-        <button type="button" onclick="openSupabaseConfigModal()" id="supabase-status-btn" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[11px] font-bold text-slate-600 transition-all flex items-center gap-1.5">
-          <span id="supabase-status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
-          <span id="supabase-status-text">Local Mode</span>
-          <i class="fa-solid fa-cloud text-slate-400 text-xs"></i>
-        </button>
-
         <div id="nav-user-profile" style="display:none;" class="items-center gap-2">
           <img id="nav-player-avatar" src="" alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-slate-300 shadow-sm" />
           <div class="text-right hidden sm:block">
@@ -299,7 +292,7 @@
           <table class="w-full text-left text-xs text-slate-600">
             <thead class="bg-slate-50 text-slate-800 font-bold uppercase border-b border-slate-200">
               <tr>
-                <th class="py-2 px-3">Date & Time</th>
+                <th class="py-2 px-3">Event Date</th>
                 <th class="py-2 px-3">Sport</th>
                 <th class="py-2 px-3">Time Slot</th>
                 <th class="py-2 px-3">Squad / Teammates</th>
@@ -316,9 +309,35 @@
 
       <!-- Sports & Slots Form -->
       <form id="form-slot-booking" onsubmit="handleSlotReservation(event)" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-6">
+        <!-- STEP 1: EVENT DATE SELECTION -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-50/70 via-white to-indigo-50/40 border-2 border-indigo-200 shadow-sm mb-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-7 h-7 rounded-full bg-[#2F2677] text-white flex items-center justify-center text-xs font-black shadow-sm">1</span>
+              <div>
+                <h4 class="text-sm font-black text-slate-900 tracking-wide uppercase">Select Event Date *</h4>
+                <p class="text-[11px] text-slate-500">Pick a tournament date to view available court slots</p>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-[#2F2677] bg-indigo-100/80 px-2.5 py-1 rounded-lg self-start sm:self-auto">
+              <i class="fa-solid fa-calendar-days mr-1"></i> Multi-Day Tournament
+            </span>
+          </div>
+
+          <div id="player-date-selector-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <!-- Dynamically rendered date cards -->
+          </div>
+        </div>
+
         <div>
-          <h3 class="text-base font-bold text-slate-900 mb-1">Select Sports & Preferred Time Slots</h3>
-          <p class="text-xs text-slate-500 mb-4">Book slots individually or choose <strong>Group Booking (Up to 4 players)</strong> for Pickleball and Paddle Ball. Overlapping hours across sports are locked automatically.</p>
+          <div class="flex items-center gap-2.5 mb-2">
+            <span class="w-7 h-7 rounded-full bg-[#008F3D] text-white flex items-center justify-center text-xs font-black shadow-sm">2</span>
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">Select Sports & Preferred Time Slots</h3>
+              <p class="text-xs text-slate-500">Configuring reservation for: <span id="selected-date-badge-name" class="font-bold text-[#2F2677] underline"></span></p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mb-4">Book slots individually or choose <strong>Group Booking (Up to 4 players)</strong> for Pickleball and Paddle Ball. Overlapping hours across sports on this date are locked automatically.</p>
 
           <div class="space-y-5">
             <!-- Pickleball -->
@@ -430,6 +449,11 @@
           <h2 class="text-xl font-black text-slate-900 mt-1">Admin Control Center</h2>
         </div>
         <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="openSupabaseConfigModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-300 flex items-center gap-1.5">
+            <span id="supabase-status-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+            <i class="fa-solid fa-database text-slate-500"></i>
+            <span id="supabase-status-text">Cloud DB</span>
+          </button>
           <button type="button" onclick="openChangePinModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-300">
             <i class="fa-solid fa-key mr-1"></i> Change PIN
           </button>
@@ -442,17 +466,71 @@
         </div>
       </div>
 
-      <!-- Capacity Rights -->
+      <!-- EVENT DATES MANAGER -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h3 class="text-base font-bold text-slate-900 mb-1">Live Court Slot Capacity & Quota Rights</h3>
-        <p class="text-xs text-slate-500 mb-4">Adjust maximum player capacity per sport per time slot in real-time[cite: 1]</p>
-        <div id="admin-inventory-table" class="overflow-x-auto"></div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-[#2F2677] text-white flex items-center justify-center text-xs font-black shadow-sm">
+                <i class="fa-solid fa-calendar-days"></i>
+              </span>
+              <h3 class="text-base font-extrabold text-slate-900">Tournament Event Dates & Schedules</h3>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">Configure and manage dates for matches, slots, and capacity quotas</p>
+          </div>
+          <button type="button" onclick="openAddDateModal()" class="px-4 py-2 bg-[#2F2677] hover:bg-[#231b61] text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 self-start sm:self-auto transition-all">
+            <i class="fa-solid fa-plus"></i> Add Event Date
+          </button>
+        </div>
+        <div id="admin-dates-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Dynamically rendered admin date cards -->
+        </div>
       </div>
 
-      <!-- Player Registry Database with Game Result Coordinator -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h3 class="text-base font-bold text-slate-900 mb-1">Master Player Database, Bookings & Match Results</h3>
-        <p class="text-xs text-slate-500 mb-4">Update match results directly in-line; changes immediately reflect in the player's dashboard</p>
+      <!-- Live Court Slot Capacity Rights with Date Tabs -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-0.5">Live Court Slot Capacity & Quota Rights</h3>
+            <p class="text-xs text-slate-500">Adjust maximum player capacity per sport per time slot for each event date in real-time</p>
+          </div>
+          <span class="text-[11px] font-bold text-slate-400">Edits auto-save & sync</span>
+        </div>
+
+        <div>
+          <span class="text-[11px] font-bold text-slate-600 uppercase tracking-wider block mb-2">Select Event Date to View / Edit Quotas:</span>
+          <div id="admin-date-tabs-container" class="flex flex-wrap gap-2">
+            <!-- Dynamic Date Tabs -->
+          </div>
+        </div>
+
+        <div id="admin-inventory-table" class="overflow-x-auto pt-2"></div>
+      </div>
+
+      <!-- Master Player Registry Database with Date Filter & Search -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-0.5">Master Player Database, Bookings & Match Results</h3>
+            <p class="text-xs text-slate-500">Update match results directly in-line; changes immediately reflect in the player's dashboard</p>
+          </div>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider"><i class="fa-solid fa-filter mr-1 text-[#2F2677]"></i>Date:</span>
+            <select id="admin-player-date-filter" onchange="handleAdminDateFilter(this.value)" class="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-[#2F2677]">
+              <option value="all">All Event Dates</option>
+              <!-- Dynamic Options -->
+            </select>
+          </div>
+          <div class="relative w-full sm:w-72">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            <input type="text" id="admin-player-search" oninput="handleAdminSearch(this.value)" placeholder="Search name, Player ID, mobile..." class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-[#2F2677]" />
+          </div>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs text-slate-600">
             <thead class="bg-slate-50 text-slate-800 font-bold uppercase border-b border-slate-200">
@@ -461,6 +539,7 @@
                 <th class="py-2.5 px-3">Player ID</th>
                 <th class="py-2.5 px-3">Full Name</th>
                 <th class="py-2.5 px-3">Mobile</th>
+                <th class="py-2.5 px-3">Event Date</th>
                 <th class="py-2.5 px-3">Pickleball</th>
                 <th class="py-2.5 px-3">Cricket</th>
                 <th class="py-2.5 px-3">Paddle</th>
@@ -564,6 +643,10 @@
             <div id="pass-player-name" class="font-bold text-slate-900"></div>
           </div>
         </div>
+        <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-2.5 flex items-center justify-between">
+          <span class="text-slate-600 font-bold"><i class="fa-solid fa-calendar-day text-[#2F2677] mr-1.5"></i>Event Date:</span>
+          <span id="pass-event-date" class="font-extrabold text-[#2F2677]"></span>
+        </div>
         <div>
           <span class="text-slate-500 block mb-1">Booked Slots:</span>
           <div id="pass-sports-summary" class="space-y-1 font-semibold"></div>
@@ -647,10 +730,65 @@
     </div>
   </div>
 
+  <!-- Admin Add / Edit Event Date Modal -->
+  <div id="modal-admin-date" style="display:none;" class="fixed inset-0 bg-black/65 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-left">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-indigo-100 text-[#2F2677] flex items-center justify-center font-bold">
+            <i class="fa-solid fa-calendar-plus"></i>
+          </div>
+          <div>
+            <h3 id="modal-date-title" class="text-sm font-black text-slate-900">Add Tournament Event Date</h3>
+            <p class="text-[11px] text-slate-500">Configure event date for player registrations</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeDateModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleDateSave(event)" class="space-y-3.5">
+        <input type="hidden" id="date-edit-mode" value="add" />
+        <input type="hidden" id="date-original-id" value="" />
+        
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Event Date (YYYY-MM-DD) *</label>
+          <input type="date" id="date-input-id" required class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 font-mono focus:ring-2 focus:ring-[#2F2677]" />
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Day Tag / Stage (e.g. Day 1, Finals) *</label>
+          <input type="text" id="date-input-day" required placeholder="e.g. Day 1 or Day 2" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#2F2677]" />
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Display Label (e.g. Sunday, 25 Oct 2026) *</label>
+          <input type="text" id="date-input-label" required placeholder="e.g. Sunday, 25 Oct 2026" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#2F2677]" />
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Status *</label>
+          <select id="date-input-status" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-[#2F2677]">
+            <option value="active">Active (Open for Slot Booking)</option>
+            <option value="closed">Closed (Locked / Read-Only)</option>
+          </select>
+        </div>
+
+        <p id="date-modal-error" class="text-xs text-rose-600 font-bold hidden"></p>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeDateModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50">Cancel</button>
+          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-[#2F2677] hover:bg-[#231b61] text-white text-xs font-bold shadow-sm">Save Date</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     var currentAdminPin = localStorage.getItem('jito_admin_pin') || "1926";
 
-    var INITIAL_INVENTORY = {
+    var DEFAULT_SLOT_TEMPLATE = {
       pickleball: {
         name: "Pickleball",
         slots: {
@@ -677,14 +815,128 @@
       }
     };
 
+    function createDefaultSportSlots() {
+      return JSON.parse(JSON.stringify(DEFAULT_SLOT_TEMPLATE));
+    }
+
+    // 1. EVENT DATES CONFIGURATION
+    var eventDates = JSON.parse(localStorage.getItem('jito_event_dates_v9') || 'null');
+    if (!eventDates || !Array.isArray(eventDates) || eventDates.length === 0) {
+      eventDates = [
+        { id: "2026-10-25", label: "Sunday, 25 Oct 2026", dayName: "Day 1", status: "active" },
+        { id: "2026-10-26", label: "Monday, 26 Oct 2026", dayName: "Day 2", status: "active" }
+      ];
+    }
+
+    // 2. INVENTORY BY EVENT DATE
+    var inventoryByDate = JSON.parse(localStorage.getItem('jito_inventory_by_date_v9') || 'null');
+    if (!inventoryByDate || typeof inventoryByDate !== 'object') {
+      inventoryByDate = {};
+      var oldInv = JSON.parse(localStorage.getItem('jito_inventory_v8') || 'null');
+      eventDates.forEach(function(d, idx) {
+        if (idx === 0 && oldInv && oldInv.pickleball) {
+          inventoryByDate[d.id] = oldInv;
+        } else {
+          inventoryByDate[d.id] = createDefaultSportSlots();
+        }
+      });
+    }
+
+    function getInventoryForDate(dateId) {
+      if (!dateId) return createDefaultSportSlots();
+      if (!inventoryByDate[dateId]) {
+        inventoryByDate[dateId] = createDefaultSportSlots();
+      }
+      return inventoryByDate[dateId];
+    }
+
     var players = JSON.parse(localStorage.getItem('jito_players_v8') || "[]");
-    var inventory = JSON.parse(localStorage.getItem('jito_inventory_v8') || JSON.stringify(INITIAL_INVENTORY));
     var nextMaleSeq = parseInt(localStorage.getItem('jito_male_seq_v8') || "1", 10);
     var nextFemaleSeq = parseInt(localStorage.getItem('jito_female_seq_v8') || "1", 10);
 
     var loggedInPlayer = null;
+    var currentSelectedDateId = (eventDates.find(function(d) { return d.status === 'active'; }) || eventDates[0] || {}).id || "";
+    var adminSelectedDateId = (eventDates[0] || {}).id || "";
+    var adminFilterDate = "all";
+    var adminSearchQuery = "";
     var playerSelections = { pickleball: null, cricket: null, paddleball: null };
     var uploadedPhotoBase64 = "";
+
+    // ================= HELPER FUNCTIONS FOR MULTI-DATE BOOKINGS =================
+    function getPlayerBookingsList(player) {
+      if (!player) return [];
+      if (player.bookings && Array.isArray(player.bookings) && player.bookings.length > 0) {
+        return player.bookings;
+      }
+      if (player.history && Array.isArray(player.history) && player.history.length > 0) {
+        var map = {};
+        player.history.forEach(function(item) {
+          if (item && item.hasBooked && item.eventDate && !map[item.eventDate]) {
+            map[item.eventDate] = item;
+          }
+        });
+        var list = Object.values(map);
+        if (list.length > 0) return list;
+      }
+      if (player.booking && player.booking.hasBooked) {
+        if (!player.booking.eventDate && eventDates[0]) {
+          player.booking.eventDate = eventDates[0].id;
+          player.booking.eventDateLabel = eventDates[0].label;
+          player.booking.eventDayName = eventDates[0].dayName;
+        }
+        return [player.booking];
+      }
+      return [];
+    }
+
+    function getPlayerBookingForDate(player, dateId) {
+      if (!player || !dateId) return null;
+      var list = getPlayerBookingsList(player);
+      return list.find(function(b) { return b.eventDate === dateId && b.hasBooked; }) || null;
+    }
+
+    function recalculateInventoryBookings() {
+      // 1. Reset all booked counters across all dates
+      Object.keys(inventoryByDate).forEach(function(dId) {
+        var inv = inventoryByDate[dId];
+        ['pickleball', 'cricket', 'paddleball'].forEach(function(sKey) {
+          if (inv[sKey] && inv[sKey].slots) {
+            Object.keys(inv[sKey].slots).forEach(function(sl) {
+              inv[sKey].slots[sl].booked = 0;
+            });
+          }
+        });
+      });
+
+      // 2. Iterate each player's bookings and tally occupied spots
+      players.forEach(function(p) {
+        var pBookings = getPlayerBookingsList(p);
+        pBookings.forEach(function(b) {
+          if (!b || !b.hasBooked || !b.eventDate) return;
+          var inv = getInventoryForDate(b.eventDate);
+          if (!inv) return;
+
+          // Pickleball
+          if (b.pickleball_slot && inv.pickleball && inv.pickleball.slots[b.pickleball_slot]) {
+            if (!b.isGroup || b.groupLead === p.id || !b.groupLead) {
+              var count = 1 + (b.pbTeammates ? b.pbTeammates.length : 0);
+              inv.pickleball.slots[b.pickleball_slot].booked += count;
+            }
+          }
+          // Box Cricket
+          if (b.cricket_slot && inv.cricket && inv.cricket.slots[b.cricket_slot]) {
+            inv.cricket.slots[b.cricket_slot].booked += 1;
+          }
+          // Paddle Ball
+          if (b.paddle_slot && inv.paddleball && inv.paddleball.slots[b.paddle_slot]) {
+            if (!b.isGroup || b.groupLead === p.id || !b.groupLead) {
+              var count = 1 + (b.paddleTeammates ? b.paddleTeammates.length : 0);
+              inv.paddleball.slots[b.paddle_slot].booked += count;
+            }
+          }
+        });
+      });
+    }
 
     // ================= SUPABASE CLOUD SYNC ENGINE =================
     var SUPABASE_URL = localStorage.getItem('jito_supabase_url') || "";
@@ -694,13 +946,11 @@
     function cleanSupabaseUrl(rawUrl) {
       if (!rawUrl) return "";
       var u = rawUrl.trim();
-      // Ensure protocol
       if (!/^https?:\/\//i.test(u)) {
         u = 'https://' + u;
       }
       try {
         var parsed = new URL(u);
-        // Supabase URL must be origin only: https://<project-ref>.supabase.co
         return parsed.origin;
       } catch (err) {
         return u.replace(/\/+$/, '');
@@ -731,20 +981,20 @@
 
       if (status === 'connected') {
         dot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
-        text.innerText = "Supabase Connected";
-        text.className = "text-emerald-700";
+        text.innerText = "DB Connected";
+        text.className = "text-emerald-700 font-bold";
       } else if (status === 'connecting') {
         dot.className = "w-2 h-2 rounded-full bg-amber-400";
         text.innerText = "Connecting...";
-        text.className = "text-amber-700";
+        text.className = "text-amber-700 font-bold";
       } else if (status === 'error') {
         dot.className = "w-2 h-2 rounded-full bg-rose-500";
-        text.innerText = "Connection Failed";
-        text.className = "text-rose-700";
+        text.innerText = "DB Error";
+        text.className = "text-rose-700 font-bold";
       } else {
         dot.className = "w-2 h-2 rounded-full bg-slate-400";
-        text.innerText = "Local Mode";
-        text.className = "text-slate-600";
+        text.innerText = "Cloud DB Setup";
+        text.className = "text-slate-600 font-bold";
       }
     }
 
@@ -777,7 +1027,6 @@
 
       var url = cleanSupabaseUrl(rawUrl);
 
-      // Warn if user pasted dashboard URL instead of API project URL
       if (url.includes('supabase.com/dashboard')) {
         errBox.innerText = "You entered the Supabase Dashboard URL. Please enter the Project URL found under Project Settings -> API (e.g. https://abcdefghijklm.supabase.co).";
         errBox.classList.remove('hidden');
@@ -799,7 +1048,6 @@
         successBox.classList.remove('hidden');
         updateSupabaseBadge('connected');
 
-        // Migrate local state to Supabase
         await syncFullStateToSupabase();
         await fetchFromSupabase();
 
@@ -841,13 +1089,16 @@
           localStorage.setItem('jito_players_v8', JSON.stringify(players));
         }
 
-        // Fetch app state (inventory & sequences)
+        // Fetch app state (eventDates, inventoryByDate, sequences)
         var sRes = await supabaseClient.from('jito_app_state').select('*');
         if (!sRes.error && sRes.data) {
           sRes.data.forEach(function(row) {
-            if (row.key === 'inventory' && row.value) {
-              inventory = row.value;
-              localStorage.setItem('jito_inventory_v8', JSON.stringify(inventory));
+            if (row.key === 'eventDates' && Array.isArray(row.value) && row.value.length > 0) {
+              eventDates = row.value;
+              localStorage.setItem('jito_event_dates_v9', JSON.stringify(eventDates));
+            } else if (row.key === 'inventoryByDate' && row.value) {
+              inventoryByDate = row.value;
+              localStorage.setItem('jito_inventory_by_date_v9', JSON.stringify(inventoryByDate));
             } else if (row.key === 'nextMaleSeq' && row.value !== undefined) {
               nextMaleSeq = parseInt(row.value, 10);
               localStorage.setItem('jito_male_seq_v8', nextMaleSeq.toString());
@@ -858,7 +1109,9 @@
           });
         }
 
+        recalculateInventoryBookings();
         updateSupabaseBadge('connected');
+        if (typeof renderPlayerDateSelector === 'function') renderPlayerDateSelector();
         if (typeof renderAllSlots === 'function') renderAllSlots();
         if (typeof updateAdminDashboard === 'function') updateAdminDashboard();
         if (loggedInPlayer) {
@@ -889,32 +1142,6 @@
       }
     }
 
-    async function syncPlayerToSupabase(player) {
-      if (!supabaseClient || !player) return;
-      try {
-        var row = {
-          id: player.id,
-          name: player.name,
-          mobile: player.mobile,
-          gender: player.gender,
-          age: player.age,
-          membership: player.membership,
-          password: player.password,
-          photo: player.photo,
-          registered_at: player.registeredAt,
-          freq_pickleball: player.freq_pickleball,
-          freq_cricket: player.freq_cricket,
-          freq_paddle: player.freq_paddle,
-          booking: player.booking || { hasBooked: false },
-          history: player.history || [],
-          updated_at: new Date().toISOString()
-        };
-        await supabaseClient.from('jito_players').upsert(row);
-      } catch (err) {
-        console.error("Error upserting player to Supabase:", err);
-      }
-    }
-
     async function syncFullStateToSupabase() {
       if (!supabaseClient) return;
       try {
@@ -942,7 +1169,8 @@
         }
 
         await supabaseClient.from('jito_app_state').upsert([
-          { key: 'inventory', value: inventory, updated_at: new Date().toISOString() },
+          { key: 'eventDates', value: eventDates, updated_at: new Date().toISOString() },
+          { key: 'inventoryByDate', value: inventoryByDate, updated_at: new Date().toISOString() },
           { key: 'nextMaleSeq', value: nextMaleSeq, updated_at: new Date().toISOString() },
           { key: 'nextFemaleSeq', value: nextFemaleSeq, updated_at: new Date().toISOString() }
         ]);
@@ -952,13 +1180,12 @@
     }
 
     function saveState() {
-      // 1. Keep fast local storage cache
       localStorage.setItem('jito_players_v8', JSON.stringify(players));
-      localStorage.setItem('jito_inventory_v8', JSON.stringify(inventory));
+      localStorage.setItem('jito_event_dates_v9', JSON.stringify(eventDates));
+      localStorage.setItem('jito_inventory_by_date_v9', JSON.stringify(inventoryByDate));
       localStorage.setItem('jito_male_seq_v8', nextMaleSeq.toString());
       localStorage.setItem('jito_female_seq_v8', nextFemaleSeq.toString());
 
-      // 2. Asynchronously replicate to Supabase
       if (supabaseClient) {
         syncFullStateToSupabase();
       }
@@ -1010,7 +1237,7 @@
       }
     }
 
-    // ================= CHANGE 2: RESET PASSWORD LOGIC =================
+    // ================= RESET PASSWORD LOGIC =================
     function openResetPasswordModal() {
       document.getElementById('reset-identifier').value = '';
       document.getElementById('reset-new-password').value = '';
@@ -1047,7 +1274,6 @@
         return;
       }
 
-      // Update password
       player.password = newPass;
       saveState();
       closeResetPasswordModal();
@@ -1107,6 +1333,7 @@
         registeredAt: new Date().toLocaleString(),
         booking: {
           hasBooked: false,
+          eventDate: null,
           pickleball_slot: null,
           cricket_slot: null,
           paddle_slot: null,
@@ -1116,7 +1343,7 @@
           matchResult: "Scheduled",
           timestamp: null
         },
-        // CHANGE 3: History of bookings & match results
+        bookings: [],
         history: []
       };
 
@@ -1162,16 +1389,147 @@
       enterBookingPortal();
     }
 
+    // ================= PLAYER DASHBOARD & DATE SELECTION =================
+    function renderPlayerDateSelector() {
+      var container = document.getElementById('player-date-selector-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!currentSelectedDateId || !eventDates.some(function(d) { return d.id === currentSelectedDateId; })) {
+        var activeFirst = eventDates.find(function(d) { return d.status === 'active'; }) || eventDates[0];
+        currentSelectedDateId = activeFirst ? activeFirst.id : "";
+      }
+
+      var currentObj = eventDates.find(function(d) { return d.id === currentSelectedDateId; });
+      var badgeElem = document.getElementById('selected-date-badge-name');
+      if (badgeElem && currentObj) {
+        badgeElem.innerText = currentObj.dayName + " (" + currentObj.label + ")";
+      }
+
+      eventDates.forEach(function(d) {
+        var isSelected = (d.id === currentSelectedDateId);
+        var isClosed = (d.status === 'closed');
+        var b = loggedInPlayer ? getPlayerBookingForDate(loggedInPlayer, d.id) : null;
+        var hasBookedOnThisDate = !!(b && b.hasBooked);
+
+        var card = document.createElement('div');
+        var cardClasses = "p-3.5 rounded-xl cursor-pointer transition-all border-2 relative ";
+        if (isSelected) {
+          cardClasses += "border-[#2F2677] bg-indigo-50/80 ring-2 ring-indigo-200 shadow-sm ";
+        } else if (isClosed) {
+          cardClasses += "border-slate-200 bg-slate-100 opacity-60 hover:border-slate-300 ";
+        } else {
+          cardClasses += "border-slate-200 bg-white hover:border-slate-400 shadow-xs ";
+        }
+        card.className = cardClasses;
+
+        var statusBadge = '';
+        if (hasBookedOnThisDate) {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200"><i class="fa-solid fa-circle-check mr-1"></i>Reserved</span>';
+        } else if (isClosed) {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">Closed</span>';
+        } else {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Open</span>';
+        }
+
+        var bookedPreview = '';
+        if (hasBookedOnThisDate) {
+          var sports = [];
+          if (b.pickleball_slot) sports.push('PB: ' + b.pickleball_slot);
+          if (b.cricket_slot) sports.push('Cricket: ' + b.cricket_slot);
+          if (b.paddle_slot) sports.push('Paddle: ' + b.paddle_slot);
+          bookedPreview = '<div class="text-[11px] font-bold text-emerald-800 mt-1 truncate"><i class="fa-solid fa-ticket mr-1"></i>' + sports.join(' • ') + '</div>';
+        } else {
+          bookedPreview = '<div class="text-[11px] text-slate-400 mt-1">Click to select slots for this day</div>';
+        }
+
+        card.innerHTML = '<div class="flex items-center justify-between mb-1">' +
+                         '  <span class="text-xs font-black uppercase tracking-wider text-[#2F2677] bg-white/80 px-2 py-0.5 rounded-md border border-indigo-100">' + d.dayName + '</span>' +
+                         '  ' + statusBadge +
+                         '</div>' +
+                         '<div class="font-extrabold text-sm text-slate-900 mt-0.5">' + d.label + '</div>' +
+                         bookedPreview +
+                         (isSelected ? '<div class="absolute -top-2 -right-2 w-5 h-5 bg-[#2F2677] text-white rounded-full flex items-center justify-center text-[10px] shadow-sm"><i class="fa-solid fa-check"></i></div>' : '');
+
+        card.onclick = function() {
+          selectPlayerDate(d.id);
+        };
+        container.appendChild(card);
+      });
+    }
+
+    function selectPlayerDate(dateId) {
+      currentSelectedDateId = dateId;
+      var dateObj = eventDates.find(function(d) { return d.id === dateId; });
+
+      var badgeElem = document.getElementById('selected-date-badge-name');
+      if (badgeElem && dateObj) {
+        badgeElem.innerText = dateObj.dayName + " (" + dateObj.label + ")";
+      }
+
+      // Preload existing selections if player already booked on this date
+      var existingBooking = loggedInPlayer ? getPlayerBookingForDate(loggedInPlayer, dateId) : null;
+      var teamAlert = document.getElementById('player-team-booking-alert');
+      var teamDetails = document.getElementById('player-team-booking-details');
+
+      if (existingBooking && existingBooking.hasBooked) {
+        playerSelections = {
+          pickleball: existingBooking.pickleball_slot || null,
+          cricket: existingBooking.cricket_slot || null,
+          paddleball: existingBooking.paddle_slot || null
+        };
+        document.getElementById('btn-save-slot-text').innerText = "Update " + (dateObj ? dateObj.dayName : '') + " Slot Booking";
+
+        if (existingBooking.groupLead && existingBooking.groupLead !== loggedInPlayer.id) {
+          teamAlert.classList.remove('hidden');
+          var bookedSportsList = [];
+          if (existingBooking.pickleball_slot) bookedSportsList.push('Pickleball (' + existingBooking.pickleball_slot + ')');
+          if (existingBooking.paddle_slot) bookedSportsList.push('Paddle Ball (' + existingBooking.paddle_slot + ')');
+          var squadNames = (existingBooking.teamList || []).join(', ');
+          teamDetails.innerHTML = '<div>• <strong>Booked by Team Captain:</strong> <span class="font-bold text-[#2F2677] font-mono">' + existingBooking.groupLead + '</span></div>' +
+                                  '<div>• <strong>Assigned Sport & Timing for ' + (dateObj ? dateObj.dayName : '') + ':</strong> <span class="font-bold text-emerald-700">' + bookedSportsList.join(', ') + '</span></div>' +
+                                  '<div>• <strong>Full Team Squad:</strong> ' + squadNames + '</div>' +
+                                  '<div class="text-[11px] text-indigo-700 mt-1 italic font-normal">* This slot is reserved for you on this date.</div>';
+        } else {
+          teamAlert.classList.add('hidden');
+        }
+      } else {
+        playerSelections = { pickleball: null, cricket: null, paddleball: null };
+        document.getElementById('btn-save-slot-text').innerText = "Confirm Slot Booking for " + (dateObj ? dateObj.dayName : '');
+        teamAlert.classList.add('hidden');
+      }
+
+      ['pickleball', 'cricket', 'paddleball'].forEach(function(k) {
+        var hasSlot = !!playerSelections[k];
+        var check = document.getElementById('check-' + k);
+        if (check) check.checked = hasSlot;
+        var slotsContainer = document.getElementById('slots-' + k);
+        var block = document.getElementById('block-' + k);
+        if (hasSlot) {
+          slotsContainer.classList.remove('hidden');
+          block.classList.add('bg-white', 'border-[#2F2677]', 'shadow-sm');
+          block.classList.remove('bg-slate-50');
+        } else {
+          slotsContainer.classList.add('hidden');
+          block.classList.remove('bg-white', 'border-[#2F2677]', 'shadow-sm');
+          block.classList.add('bg-slate-50');
+        }
+      });
+
+      renderPlayerDateSelector();
+      renderAllSlots();
+    }
+
     function renderPlayerHistory() {
       var tbody = document.getElementById('player-history-tbody');
       tbody.innerHTML = '';
 
       var historyItems = (loggedInPlayer.history && loggedInPlayer.history.length > 0) 
         ? loggedInPlayer.history 
-        : (loggedInPlayer.booking && loggedInPlayer.booking.hasBooked ? [loggedInPlayer.booking] : []);
+        : getPlayerBookingsList(loggedInPlayer);
 
       if (historyItems.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-slate-400">No match or booking records yet. Book a slot below!</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-slate-400">No match or booking records yet. Select an event date and book a slot below!</td></tr>';
         return;
       }
 
@@ -1189,7 +1547,12 @@
         else if (resText.toLowerCase().includes('lost') || resText.toLowerCase().includes('runner')) resultBadgeColor = 'bg-rose-100 text-rose-800 font-bold';
         else if (resText.toLowerCase().includes('sched') || resText.toLowerCase().includes('upcom')) resultBadgeColor = 'bg-blue-100 text-blue-800';
 
-        row.innerHTML = '<td class="py-2.5 px-3 font-mono text-[11px]">' + (item.timestamp || 'N/A') + '</td>' +
+        var dateLabel = item.eventDateLabel || item.eventDayName || item.eventDate || item.timestamp || 'N/A';
+        if (item.eventDayName && item.eventDateLabel) {
+          dateLabel = item.eventDayName + ' - ' + item.eventDateLabel;
+        }
+
+        row.innerHTML = '<td class="py-2.5 px-3 font-bold text-[#2F2677] text-xs"><i class="fa-regular fa-calendar mr-1"></i>' + dateLabel + '</td>' +
                         '<td class="py-2.5 px-3 font-bold text-slate-800">' + (sportsChosen.join(' • ') || 'N/A') + '</td>' +
                         '<td class="py-2.5 px-3">' + (item.pickleball_slot || item.cricket_slot || item.paddle_slot || 'N/A') + '</td>' +
                         '<td class="py-2.5 px-3 font-mono text-[11px]">' + squadText + '</td>' +
@@ -1218,62 +1581,21 @@
       document.getElementById('player-profile-age').innerText = loggedInPlayer.age;
       document.getElementById('player-profile-membership').innerText = loggedInPlayer.membership;
 
-      var teamAlert = document.getElementById('player-team-booking-alert');
-      var teamDetails = document.getElementById('player-team-booking-details');
-
-      if (loggedInPlayer.booking && loggedInPlayer.booking.hasBooked) {
-        document.getElementById('player-current-booking-status').innerText = "Active Slots Reserved";
+      var allPlayerBookings = getPlayerBookingsList(loggedInPlayer);
+      if (allPlayerBookings.length > 0) {
+        document.getElementById('player-current-booking-status').innerText = allPlayerBookings.length + " Date(s) Reserved";
         document.getElementById('player-current-booking-status').className = "text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200";
-        document.getElementById('btn-save-slot-text').innerText = "Update / Modify Slot Booking";
-
-        // Check if player was booked as part of a squad by someone else
-        if (loggedInPlayer.booking.groupLead && loggedInPlayer.booking.groupLead !== loggedInPlayer.id) {
-          teamAlert.classList.remove('hidden');
-          var bookedSportsList = [];
-          if (loggedInPlayer.booking.pickleball_slot) bookedSportsList.push('Pickleball (' + loggedInPlayer.booking.pickleball_slot + ')');
-          if (loggedInPlayer.booking.paddle_slot) bookedSportsList.push('Paddle Ball (' + loggedInPlayer.booking.paddle_slot + ')');
-
-          var squadNames = (loggedInPlayer.booking.teamList || []).join(', ');
-          teamDetails.innerHTML = '<div>• <strong>Booked by Team Captain:</strong> <span class="font-bold text-[#2F2677] font-mono">' + loggedInPlayer.booking.groupLead + '</span></div>' +
-                                  '<div>• <strong>Assigned Sport & Timing:</strong> <span class="font-bold text-emerald-700">' + bookedSportsList.join(', ') + '</span></div>' +
-                                  '<div>• <strong>Full Team Squad:</strong> ' + squadNames + '</div>' +
-                                  '<div class="text-[11px] text-indigo-700 mt-1 italic font-normal">* This slot is reserved for you. All overlapping hours across sports are locked below so you cannot be double-booked.</div>';
-        } else {
-          teamAlert.classList.add('hidden');
-        }
-
-        playerSelections = {
-          pickleball: loggedInPlayer.booking.pickleball_slot || null,
-          cricket: loggedInPlayer.booking.cricket_slot || null,
-          paddleball: loggedInPlayer.booking.paddle_slot || null
-        };
       } else {
         document.getElementById('player-current-booking-status').innerText = "No Active Slot Booked";
         document.getElementById('player-current-booking-status').className = "text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200";
-        document.getElementById('btn-save-slot-text').innerText = "Confirm Slot Booking";
-        teamAlert.classList.add('hidden');
-        playerSelections = { pickleball: null, cricket: null, paddleball: null };
       }
 
-      ['pickleball', 'cricket', 'paddleball'].forEach(function(k) {
-        var hasSlot = !!playerSelections[k];
-        var check = document.getElementById('check-' + k);
-        if (check) check.checked = hasSlot;
-        var slotsContainer = document.getElementById('slots-' + k);
-        var block = document.getElementById('block-' + k);
+      if (!currentSelectedDateId || !eventDates.some(function(d) { return d.id === currentSelectedDateId; })) {
+        var activeFirst = eventDates.find(function(d) { return d.status === 'active'; }) || eventDates[0];
+        currentSelectedDateId = activeFirst ? activeFirst.id : "";
+      }
 
-        if (hasSlot) {
-          slotsContainer.classList.remove('hidden');
-          block.classList.add('bg-white', 'border-[#2F2677]', 'shadow-sm');
-          block.classList.remove('bg-slate-50');
-        } else {
-          slotsContainer.classList.add('hidden');
-          block.classList.remove('bg-white', 'border-[#2F2677]', 'shadow-sm');
-          block.classList.add('bg-slate-50');
-        }
-      });
-
-      renderAllSlots();
+      selectPlayerDate(currentSelectedDateId);
       renderPlayerHistory();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1315,23 +1637,26 @@
     }
 
     function isTimeSlotClaimedElsewhere(targetSport, slotKey) {
+      var dateInv = getInventoryForDate(currentSelectedDateId);
       for (var sport in playerSelections) {
         if (sport !== targetSport && playerSelections[sport] === slotKey) {
-          return inventory[sport].name;
+          return (dateInv[sport] ? dateInv[sport].name : sport);
         }
       }
       return null;
     }
 
     function renderAllSlots() {
-      var isBookedByOther = (loggedInPlayer && loggedInPlayer.booking && loggedInPlayer.booking.hasBooked && loggedInPlayer.booking.groupLead && loggedInPlayer.booking.groupLead !== loggedInPlayer.id);
+      var dateInv = getInventoryForDate(currentSelectedDateId);
+      var currentBookingOnDate = loggedInPlayer ? getPlayerBookingForDate(loggedInPlayer, currentSelectedDateId) : null;
+      var isBookedByOther = (currentBookingOnDate && currentBookingOnDate.hasBooked && currentBookingOnDate.groupLead && currentBookingOnDate.groupLead !== loggedInPlayer.id);
 
       ['pickleball', 'cricket', 'paddleball'].forEach(function(sportKey) {
         var grid = document.getElementById('grid-' + sportKey);
         if (!grid) return;
         grid.innerHTML = '';
 
-        var slots = inventory[sportKey].slots;
+        var slots = dateInv[sportKey].slots;
 
         Object.keys(slots).forEach(function(slotKey) {
           var slotData = slots[slotKey];
@@ -1340,27 +1665,25 @@
           var conflictingSport = isTimeSlotClaimedElsewhere(sportKey, slotKey);
           var isChosen = playerSelections[sportKey] === slotKey;
 
-          // Check if this exact slot was booked for the player by their team captain
           var isAssignedSquadSlot = isBookedByOther && (
-            (sportKey === 'pickleball' && loggedInPlayer.booking.pickleball_slot === slotKey) ||
-            (sportKey === 'paddleball' && loggedInPlayer.booking.paddle_slot === slotKey)
+            (sportKey === 'pickleball' && currentBookingOnDate.pickleball_slot === slotKey) ||
+            (sportKey === 'paddleball' && currentBookingOnDate.paddle_slot === slotKey)
           );
 
-          // Check if player is occupied at this time slot via squad booking in another sport
           var isOccupiedBySquadInOtherSport = isBookedByOther && !isAssignedSquadSlot && (
-            (loggedInPlayer.booking.pickleball_slot === slotKey && sportKey !== 'pickleball') ||
-            (loggedInPlayer.booking.paddle_slot === slotKey && sportKey !== 'paddleball')
+            (currentBookingOnDate.pickleball_slot === slotKey && sportKey !== 'pickleball') ||
+            (currentBookingOnDate.paddle_slot === slotKey && sportKey !== 'paddleball')
           );
 
           var div = document.createElement('div');
 
           if (isAssignedSquadSlot) {
             div.className = "p-3 rounded-xl border-2 border-indigo-500 bg-indigo-50/80 cursor-default select-none";
-            div.innerHTML = '<div class="flex items-center justify-between text-[11px] font-bold text-indigo-900 mb-1"><span><i class="fa-solid fa-users mr-1"></i> Squad Slot</span><span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-600 text-white font-bold">Confirmed</span></div><div class="font-black text-sm text-indigo-950">' + slotKey + '</div><div class="text-[10px] text-indigo-700 font-bold mt-1">Booked by ' + loggedInPlayer.booking.groupLead + '</div>';
+            div.innerHTML = '<div class="flex items-center justify-between text-[11px] font-bold text-indigo-900 mb-1"><span><i class="fa-solid fa-users mr-1"></i> Squad Slot</span><span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-600 text-white font-bold">Confirmed</span></div><div class="font-black text-sm text-indigo-950">' + slotKey + '</div><div class="text-[10px] text-indigo-700 font-bold mt-1">Booked by ' + currentBookingOnDate.groupLead + '</div>';
           } else if (isOccupiedBySquadInOtherSport) {
-            var occupyingSport = loggedInPlayer.booking.pickleball_slot === slotKey ? 'Pickleball' : 'Paddle Ball';
+            var occupyingSport = currentBookingOnDate.pickleball_slot === slotKey ? 'Pickleball' : 'Paddle Ball';
             div.className = "p-3 rounded-xl border border-rose-200 bg-rose-50/70 text-rose-900 cursor-not-allowed select-none";
-            div.innerHTML = '<div class="flex items-center justify-between text-[11px] font-bold text-rose-700 mb-1"><span><i class="fa-solid fa-ban mr-1"></i> Time Conflict</span><span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-200 font-black">Occupied</span></div><div class="font-extrabold text-sm line-through text-slate-500">' + slotKey + '</div><div class="text-[10px] text-rose-800 font-semibold mt-1">Playing ' + occupyingSport + ' with ' + loggedInPlayer.booking.groupLead + '</div>';
+            div.innerHTML = '<div class="flex items-center justify-between text-[11px] font-bold text-rose-700 mb-1"><span><i class="fa-solid fa-ban mr-1"></i> Time Conflict</span><span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-200 font-black">Occupied</span></div><div class="font-extrabold text-sm line-through text-slate-500">' + slotKey + '</div><div class="text-[10px] text-rose-800 font-semibold mt-1">Playing ' + occupyingSport + ' with ' + currentBookingOnDate.groupLead + '</div>';
           } else if (conflictingSport) {
             div.className = "p-3 rounded-xl border border-amber-200 bg-amber-50/70 text-amber-900 cursor-not-allowed select-none";
             div.innerHTML = '<div class="flex items-center justify-between text-[11px] font-bold text-amber-700 mb-1"><span><i class="fa-solid fa-clock-rotate-left mr-1"></i> Time Conflict</span><span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-200">Booked</span></div><div class="font-extrabold text-sm line-through text-slate-500">' + slotKey + '</div><div class="text-[10px] text-amber-800 font-semibold mt-1">Chosen for ' + conflictingSport + '</div>';
@@ -1377,8 +1700,7 @@
       });
     }
 
-    // CHANGE 1: STRICT SQUAD VALIDATION
-    // Checks if any teammate is already booked in ANY sport during the selected slotKey
+    // STRICT SQUAD VALIDATION PER EVENT DATE
     function getGroupTeammates(sportKey, selectedSlotKey) {
       var isGroup = document.getElementById('group-' + sportKey + '-toggle')?.checked;
       if (!isGroup) return [];
@@ -1407,11 +1729,13 @@
           return null;
         }
 
-        // CRITICAL CHECK: Is teammate already occupied at this time slot?
-        if (found.booking && found.booking.hasBooked) {
-          var b = found.booking;
-          if (b.pickleball_slot === selectedSlotKey || b.cricket_slot === selectedSlotKey || b.paddle_slot === selectedSlotKey) {
-            alert("COLLISION DETECTED:\nPlayer " + found.name + " (" + found.id + ") is already booked at " + selectedSlotKey + "!\n\nThey cannot be added to your squad for this time slot.");
+        // CRITICAL CHECK: Is teammate already occupied at this time slot on this selected date?
+        var tBookingOnDate = getPlayerBookingForDate(found, currentSelectedDateId);
+        if (tBookingOnDate && tBookingOnDate.hasBooked) {
+          if (tBookingOnDate.pickleball_slot === selectedSlotKey || tBookingOnDate.cricket_slot === selectedSlotKey || tBookingOnDate.paddle_slot === selectedSlotKey) {
+            var dateObj = eventDates.find(function(d) { return d.id === currentSelectedDateId; });
+            var dateStr = dateObj ? dateObj.dayName : currentSelectedDateId;
+            alert("COLLISION DETECTED:\nPlayer " + found.name + " (" + found.id + ") is already booked at " + selectedSlotKey + " on " + dateStr + "!\n\nThey cannot be added to your squad for this time slot.");
             return null;
           }
         }
@@ -1424,6 +1748,12 @@
     function handleSlotReservation(e) {
       e.preventDefault();
 
+      var dateObj = eventDates.find(function(d) { return d.id === currentSelectedDateId; });
+      if (!dateObj || dateObj.status === 'closed') {
+        alert("This event date is currently closed for bookings. Please choose an active date.");
+        return;
+      }
+
       var selectedSports = [];
       ['pickleball', 'cricket', 'paddleball'].forEach(function(k) {
         if (document.getElementById('check-' + k).checked) {
@@ -1432,14 +1762,16 @@
       });
 
       if (selectedSports.length === 0) {
-        alert("Please select at least one sport to play.");
+        alert("Please select at least one sport to play on " + dateObj.dayName + " (" + dateObj.label + ").");
         return;
       }
+
+      var dateInv = getInventoryForDate(currentSelectedDateId);
 
       for (var i = 0; i < selectedSports.length; i++) {
         var s = selectedSports[i];
         if (!playerSelections[s]) {
-          alert("Please select an available time slot for " + inventory[s].name + ".");
+          alert("Please select an available time slot for " + dateInv[s].name + " on " + dateObj.dayName + ".");
           return;
         }
       }
@@ -1461,29 +1793,21 @@
       var paddleSpotsNeeded = 1 + paddleTeammates.length;
       var cricketSpotsNeeded = 1;
 
-      // Release previous booking if modifying
-      if (loggedInPlayer.booking && loggedInPlayer.booking.hasBooked) {
-        var prev = loggedInPlayer.booking;
-        var prevPbCount = 1 + (prev.pbTeammates ? prev.pbTeammates.length : 0);
-        var prevPaddleCount = 1 + (prev.paddleTeammates ? prev.paddleTeammates.length : 0);
+      // Check capacity accounting for previously reserved spots on this date
+      var prevBookingOnDate = getPlayerBookingForDate(loggedInPlayer, currentSelectedDateId);
+      var prevPbCount = prevBookingOnDate && prevBookingOnDate.pickleball_slot ? (1 + (prevBookingOnDate.pbTeammates ? prevBookingOnDate.pbTeammates.length : 0)) : 0;
+      var prevPaddleCount = prevBookingOnDate && prevBookingOnDate.paddle_slot ? (1 + (prevBookingOnDate.paddleTeammates ? prevBookingOnDate.paddleTeammates.length : 0)) : 0;
+      var prevCricketCount = prevBookingOnDate && prevBookingOnDate.cricket_slot ? 1 : 0;
 
-        if (prev.pickleball_slot && inventory.pickleball.slots[prev.pickleball_slot]) {
-          inventory.pickleball.slots[prev.pickleball_slot].booked = Math.max(0, inventory.pickleball.slots[prev.pickleball_slot].booked - prevPbCount);
-        }
-        if (prev.cricket_slot && inventory.cricket.slots[prev.cricket_slot]) {
-          inventory.cricket.slots[prev.cricket_slot].booked = Math.max(0, inventory.cricket.slots[prev.cricket_slot].booked - 1);
-        }
-        if (prev.paddle_slot && inventory.paddleball.slots[prev.paddle_slot]) {
-          inventory.paddleball.slots[prev.paddle_slot].booked = Math.max(0, inventory.paddleball.slots[prev.paddle_slot].booked - prevPaddleCount);
-        }
-      }
-
-      // Verify slot capacity against group size
       if (selectedSports.includes('pickleball')) {
         var pbSlot = playerSelections.pickleball;
-        var pbRemaining = inventory.pickleball.slots[pbSlot].cap - inventory.pickleball.slots[pbSlot].booked;
+        var pbCurrBooked = dateInv.pickleball.slots[pbSlot].booked;
+        if (prevBookingOnDate && prevBookingOnDate.pickleball_slot === pbSlot) {
+          pbCurrBooked -= prevPbCount;
+        }
+        var pbRemaining = dateInv.pickleball.slots[pbSlot].cap - pbCurrBooked;
         if (pbRemaining < pbSpotsNeeded) {
-          alert("Not enough spots in Pickleball " + pbSlot + " for your squad (" + pbSpotsNeeded + " spots needed, only " + pbRemaining + " available).");
+          alert("Not enough spots in Pickleball " + pbSlot + " on " + dateObj.dayName + " for your squad (" + pbSpotsNeeded + " spots needed, only " + pbRemaining + " available).");
           renderAllSlots();
           return;
         }
@@ -1491,9 +1815,13 @@
 
       if (selectedSports.includes('paddleball')) {
         var pdSlot = playerSelections.paddleball;
-        var pdRemaining = inventory.paddleball.slots[pdSlot].cap - inventory.paddleball.slots[pdSlot].booked;
+        var pdCurrBooked = dateInv.paddleball.slots[pdSlot].booked;
+        if (prevBookingOnDate && prevBookingOnDate.paddle_slot === pdSlot) {
+          pdCurrBooked -= prevPaddleCount;
+        }
+        var pdRemaining = dateInv.paddleball.slots[pdSlot].cap - pdCurrBooked;
         if (pdRemaining < paddleSpotsNeeded) {
-          alert("Not enough spots in Paddle Ball " + pdSlot + " for your squad (" + paddleSpotsNeeded + " spots needed, only " + pdRemaining + " available).");
+          alert("Not enough spots in Paddle Ball " + pdSlot + " on " + dateObj.dayName + " for your squad (" + paddleSpotsNeeded + " spots needed, only " + pdRemaining + " available).");
           renderAllSlots();
           return;
         }
@@ -1501,32 +1829,28 @@
 
       if (selectedSports.includes('cricket')) {
         var crSlot = playerSelections.cricket;
-        var crRemaining = inventory.cricket.slots[crSlot].cap - inventory.cricket.slots[crSlot].booked;
+        var crCurrBooked = dateInv.cricket.slots[crSlot].booked;
+        if (prevBookingOnDate && prevBookingOnDate.cricket_slot === crSlot) {
+          crCurrBooked -= prevCricketCount;
+        }
+        var crRemaining = dateInv.cricket.slots[crSlot].cap - crCurrBooked;
         if (crRemaining < cricketSpotsNeeded) {
-          alert("The " + crSlot + " slot for Box Cricket is full.");
+          alert("The " + crSlot + " slot for Box Cricket on " + dateObj.dayName + " is full.");
           renderAllSlots();
           return;
         }
       }
 
-      // DEDUCT FROM INVENTORY
-      if (selectedSports.includes('pickleball')) {
-        inventory.pickleball.slots[playerSelections.pickleball].booked += pbSpotsNeeded;
-      }
-      if (selectedSports.includes('paddleball')) {
-        inventory.paddleball.slots[playerSelections.paddleball].booked += paddleSpotsNeeded;
-      }
-      if (selectedSports.includes('cricket')) {
-        inventory.cricket.slots[playerSelections.cricket].booked += cricketSpotsNeeded;
-      }
-
-      // Update Captain Booking
+      // Update Captain Booking Record
       var fullSquadList = [loggedInPlayer.id].concat(pbTeammates).concat(paddleTeammates);
       fullSquadList = Array.from(new Set(fullSquadList));
 
       var currentTimestamp = new Date().toLocaleString();
       var bookingRecord = {
         hasBooked: true,
+        eventDate: currentSelectedDateId,
+        eventDateLabel: dateObj.label,
+        eventDayName: dateObj.dayName,
         pickleball_slot: playerSelections.pickleball || '',
         cricket_slot: playerSelections.cricket || '',
         paddle_slot: playerSelections.paddleball || '',
@@ -1535,55 +1859,71 @@
         pbTeammates: pbTeammates,
         paddleTeammates: paddleTeammates,
         teamList: fullSquadList,
-        matchResult: loggedInPlayer.booking?.matchResult || "Scheduled",
+        matchResult: (prevBookingOnDate && prevBookingOnDate.matchResult) ? prevBookingOnDate.matchResult : "Scheduled",
         timestamp: currentTimestamp
       };
 
+      // Save to loggedInPlayer
+      if (!loggedInPlayer.bookings) loggedInPlayer.bookings = getPlayerBookingsList(loggedInPlayer);
+      loggedInPlayer.bookings = loggedInPlayer.bookings.filter(function(b) { return b.eventDate !== currentSelectedDateId; });
+      loggedInPlayer.bookings.push(bookingRecord);
       loggedInPlayer.booking = bookingRecord;
+
       if (!loggedInPlayer.history) loggedInPlayer.history = [];
       loggedInPlayer.history.unshift(bookingRecord);
 
       var idx = players.findIndex(function(p) { return p.id === loggedInPlayer.id; });
       if (idx !== -1) players[idx] = loggedInPlayer;
 
-      // AUTOMATICALLY PROPAGATE TO ALL TEAMMATES' DASHBOARDS
+      // AUTOMATICALLY PROPAGATE TO ALL TEAMMATES FOR THIS DATE
       var allTeammateIds = Array.from(new Set(pbTeammates.concat(paddleTeammates)));
       allTeammateIds.forEach(function(tid) {
         var tPlayer = players.find(function(p) { return p.id === tid; });
         if (tPlayer) {
+          var tPrev = getPlayerBookingForDate(tPlayer, currentSelectedDateId);
           var tRecord = {
             hasBooked: true,
-            pickleball_slot: pbTeammates.includes(tid) ? playerSelections.pickleball : (tPlayer.booking?.pickleball_slot || ''),
-            paddle_slot: paddleTeammates.includes(tid) ? playerSelections.paddleball : (tPlayer.booking?.paddle_slot || ''),
-            cricket_slot: tPlayer.booking?.cricket_slot || '',
+            eventDate: currentSelectedDateId,
+            eventDateLabel: dateObj.label,
+            eventDayName: dateObj.dayName,
+            pickleball_slot: pbTeammates.includes(tid) ? playerSelections.pickleball : (tPrev?.pickleball_slot || ''),
+            paddle_slot: paddleTeammates.includes(tid) ? playerSelections.paddleball : (tPrev?.paddle_slot || ''),
+            cricket_slot: tPrev?.cricket_slot || '',
             isGroup: true,
             groupLead: loggedInPlayer.id,
             teamList: fullSquadList,
-            matchResult: tPlayer.booking?.matchResult || "Scheduled",
+            matchResult: (tPrev && tPrev.matchResult) ? tPrev.matchResult : "Scheduled",
             timestamp: currentTimestamp
           };
+          if (!tPlayer.bookings) tPlayer.bookings = getPlayerBookingsList(tPlayer);
+          tPlayer.bookings = tPlayer.bookings.filter(function(b) { return b.eventDate !== currentSelectedDateId; });
+          tPlayer.bookings.push(tRecord);
           tPlayer.booking = tRecord;
+
           if (!tPlayer.history) tPlayer.history = [];
           tPlayer.history.unshift(tRecord);
         }
       });
 
+      recalculateInventoryBookings();
       saveState();
 
       // Show Confirmation Pass Modal
       document.getElementById('pass-player-photo').src = loggedInPlayer.photo || '';
       document.getElementById('pass-player-id').innerText = loggedInPlayer.id;
       document.getElementById('pass-player-name').innerText = loggedInPlayer.name;
+      document.getElementById('pass-event-date').innerText = dateObj.dayName + " (" + dateObj.label + ")";
+
       var summaryDiv = document.getElementById('pass-sports-summary');
       summaryDiv.innerHTML = '';
-      if (loggedInPlayer.booking.pickleball_slot) {
-        summaryDiv.innerHTML += '<div class="text-[#2F2677]">• Pickleball: <strong>' + loggedInPlayer.booking.pickleball_slot + '</strong>' + (pbTeammates.length > 0 ? ' (Squad: ' + fullSquadList.join(', ') + ' - ' + pbSpotsNeeded + ' spots deducted)' : '') + '</div>';
+      if (bookingRecord.pickleball_slot) {
+        summaryDiv.innerHTML += '<div class="text-[#2F2677]">• Pickleball: <strong>' + bookingRecord.pickleball_slot + '</strong>' + (pbTeammates.length > 0 ? ' (Squad: ' + fullSquadList.join(', ') + ' - ' + pbSpotsNeeded + ' spots deducted)' : '') + '</div>';
       }
-      if (loggedInPlayer.booking.cricket_slot) {
-        summaryDiv.innerHTML += '<div class="text-[#E20111]">• Box Cricket: <strong>' + loggedInPlayer.booking.cricket_slot + '</strong></div>';
+      if (bookingRecord.cricket_slot) {
+        summaryDiv.innerHTML += '<div class="text-[#E20111]">• Box Cricket: <strong>' + bookingRecord.cricket_slot + '</strong></div>';
       }
-      if (loggedInPlayer.booking.paddle_slot) {
-        summaryDiv.innerHTML += '<div class="text-[#008F3D]">• Paddle Ball: <strong>' + loggedInPlayer.booking.paddle_slot + '</strong>' + (paddleTeammates.length > 0 ? ' (Squad: ' + fullSquadList.join(', ') + ' - ' + paddleSpotsNeeded + ' spots deducted)' : '') + '</div>';
+      if (bookingRecord.paddle_slot) {
+        summaryDiv.innerHTML += '<div class="text-[#008F3D]">• Paddle Ball: <strong>' + bookingRecord.paddle_slot + '</strong>' + (paddleTeammates.length > 0 ? ' (Squad: ' + fullSquadList.join(', ') + ' - ' + paddleSpotsNeeded + ' spots deducted)' : '') + '</div>';
       }
 
       document.getElementById('modal-pass').style.display = 'flex';
@@ -1594,6 +1934,7 @@
       document.getElementById('modal-pass').style.display = 'none';
     }
 
+    // ================= ADMIN CONTROLS =================
     function openAdminAuth() {
       document.getElementById('admin-pin-input').value = '';
       document.getElementById('admin-auth-error').classList.add('hidden');
@@ -1664,115 +2005,386 @@
       alert('Admin PIN updated successfully!');
     }
 
+    // ================= EVENT DATE MANAGEMENT (ADMIN) =================
+    function openAddDateModal() {
+      document.getElementById('modal-date-title').innerText = "Add Tournament Event Date";
+      document.getElementById('date-edit-mode').value = "add";
+      document.getElementById('date-original-id').value = "";
+      document.getElementById('date-input-id').value = "";
+      document.getElementById('date-input-id').disabled = false;
+      document.getElementById('date-input-day').value = "Day " + (eventDates.length + 1);
+      document.getElementById('date-input-label').value = "";
+      document.getElementById('date-input-status').value = "active";
+      document.getElementById('date-modal-error').classList.add('hidden');
+      document.getElementById('modal-admin-date').style.display = 'flex';
+    }
+
+    function openEditDateModal(dateId) {
+      var d = eventDates.find(function(item) { return item.id === dateId; });
+      if (!d) return;
+      document.getElementById('modal-date-title').innerText = "Edit Tournament Event Date";
+      document.getElementById('date-edit-mode').value = "edit";
+      document.getElementById('date-original-id').value = d.id;
+      document.getElementById('date-input-id').value = d.id;
+      document.getElementById('date-input-id').disabled = true;
+      document.getElementById('date-input-day').value = d.dayName || "";
+      document.getElementById('date-input-label').value = d.label || "";
+      document.getElementById('date-input-status').value = d.status || "active";
+      document.getElementById('date-modal-error').classList.add('hidden');
+      document.getElementById('modal-admin-date').style.display = 'flex';
+    }
+
+    function closeDateModal() {
+      document.getElementById('modal-admin-date').style.display = 'none';
+    }
+
+    function handleDateSave(e) {
+      e.preventDefault();
+      var mode = document.getElementById('date-edit-mode').value;
+      var dateId = document.getElementById('date-input-id').value.trim();
+      var dayName = document.getElementById('date-input-day').value.trim();
+      var label = document.getElementById('date-input-label').value.trim();
+      var status = document.getElementById('date-input-status').value;
+      var errBox = document.getElementById('date-modal-error');
+      errBox.classList.add('hidden');
+
+      if (!dateId || !dayName || !label) {
+        errBox.innerText = "All fields are required.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      if (mode === 'add') {
+        if (eventDates.some(function(d) { return d.id === dateId; })) {
+          errBox.innerText = "An event date with ID " + dateId + " already exists.";
+          errBox.classList.remove('hidden');
+          return;
+        }
+        var newDate = { id: dateId, dayName: dayName, label: label, status: status };
+        eventDates.push(newDate);
+        if (!inventoryByDate[dateId]) {
+          inventoryByDate[dateId] = createDefaultSportSlots();
+        }
+      } else {
+        var origId = document.getElementById('date-original-id').value;
+        var existing = eventDates.find(function(d) { return d.id === origId; });
+        if (existing) {
+          existing.dayName = dayName;
+          existing.label = label;
+          existing.status = status;
+        }
+      }
+
+      saveState();
+      closeDateModal();
+      updateAdminDashboard();
+      if (typeof renderPlayerDateSelector === 'function') renderPlayerDateSelector();
+      alert("Event Date saved successfully!");
+    }
+
+    function toggleDateStatus(dateId) {
+      var d = eventDates.find(function(item) { return item.id === dateId; });
+      if (!d) return;
+      d.status = (d.status === 'active' ? 'closed' : 'active');
+      saveState();
+      updateAdminDashboard();
+      if (typeof renderPlayerDateSelector === 'function') renderPlayerDateSelector();
+    }
+
+    function deleteDate(dateId) {
+      if (eventDates.length <= 1) {
+        alert("At least one event date must remain in the tournament system.");
+        return;
+      }
+      var count = 0;
+      players.forEach(function(p) {
+        if (getPlayerBookingForDate(p, dateId)) count++;
+      });
+
+      var msg = "Are you sure you want to delete this event date (" + dateId + ")?";
+      if (count > 0) {
+        msg = "WARNING: " + count + " player(s) currently have bookings for this date!\nDeleting this date will remove reservations for this date. Continue?";
+      }
+
+      if (!confirm(msg)) return;
+
+      eventDates = eventDates.filter(function(d) { return d.id !== dateId; });
+      delete inventoryByDate[dateId];
+      if (adminSelectedDateId === dateId) {
+        adminSelectedDateId = eventDates[0].id;
+      }
+      if (currentSelectedDateId === dateId) {
+        currentSelectedDateId = eventDates[0].id;
+      }
+
+      recalculateInventoryBookings();
+      saveState();
+      updateAdminDashboard();
+      if (typeof renderPlayerDateSelector === 'function') renderPlayerDateSelector();
+      if (typeof renderAllSlots === 'function') renderAllSlots();
+    }
+
+    function selectAdminDate(dateId) {
+      adminSelectedDateId = dateId;
+      updateAdminDashboard();
+    }
+
+    function handleAdminDateFilter(val) {
+      adminFilterDate = val;
+      updateAdminDashboard();
+    }
+
+    function handleAdminSearch(val) {
+      adminSearchQuery = (val || "").trim().toLowerCase();
+      updateAdminDashboard();
+    }
+
     function updateSlotCapacity(sportKey, slotKey, newCapValue) {
       var val = parseInt(newCapValue, 10);
       if (isNaN(val) || val < 0) return;
-      inventory[sportKey].slots[slotKey].cap = val;
+      var dateInv = getInventoryForDate(adminSelectedDateId);
+      dateInv[sportKey].slots[slotKey].cap = val;
       saveState();
       renderAllSlots();
       updateAdminDashboard();
     }
 
-    // CHANGE 3: ADMIN MATCH RESULT UPDATE LOGIC
-    function updateMatchResult(playerId, newResult) {
+    function updateMatchResult(playerId, eventDate, newResult) {
       var player = players.find(function(p) { return p.id === playerId; });
-      if (player && player.booking) {
-        player.booking.matchResult = newResult;
-        if (player.history && player.history.length > 0) {
-          player.history[0].matchResult = newResult;
-        }
-        saveState();
-        alert("Match result updated to '" + newResult + "' for " + player.name + " (" + player.id + ").");
-        updateAdminDashboard();
+      if (!player) return;
+
+      var b = getPlayerBookingForDate(player, eventDate);
+      if (b) {
+        b.matchResult = newResult;
       }
+      if (player.booking && player.booking.eventDate === eventDate) {
+        player.booking.matchResult = newResult;
+      }
+      if (player.history) {
+        player.history.forEach(function(h) {
+          if (h.eventDate === eventDate) h.matchResult = newResult;
+        });
+      }
+      saveState();
+      alert("Match result updated to '" + newResult + "' for " + player.name + " (" + player.id + ") on " + eventDate + ".");
+      updateAdminDashboard();
     }
 
     function updateAdminDashboard() {
+      if (!adminSelectedDateId || !eventDates.some(function(d) { return d.id === adminSelectedDateId; })) {
+        adminSelectedDateId = eventDates[0] ? eventDates[0].id : "";
+      }
+
+      // 1. Render Admin Dates List
+      var datesListDiv = document.getElementById('admin-dates-list');
+      if (datesListDiv) {
+        datesListDiv.innerHTML = '';
+        eventDates.forEach(function(d) {
+          var bookedCount = 0;
+          players.forEach(function(p) {
+            if (getPlayerBookingForDate(p, d.id)) bookedCount++;
+          });
+
+          var card = document.createElement('div');
+          card.className = "p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between space-y-3";
+          card.innerHTML = '<div>' +
+                           '  <div class="flex items-center justify-between mb-1.5">' +
+                           '    <span class="text-xs font-black uppercase tracking-wider text-[#2F2677] bg-indigo-100/70 px-2 py-0.5 rounded-md">' + d.dayName + '</span>' +
+                           '    <span class="px-2 py-0.5 rounded-full text-[10px] font-black ' + (d.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700') + '">' + (d.status === 'active' ? 'ACTIVE' : 'CLOSED') + '</span>' +
+                           '  </div>' +
+                           '  <h4 class="font-extrabold text-slate-900 text-sm">' + d.label + '</h4>' +
+                           '  <p class="text-[11px] font-mono text-slate-500 mt-0.5">Date ID: ' + d.id + '</p>' +
+                           '  <div class="mt-2 text-xs font-semibold text-slate-700"><i class="fa-solid fa-users text-slate-400 mr-1.5"></i>' + bookedCount + ' Players Booked</div>' +
+                           '</div>' +
+                           '<div class="flex items-center gap-1.5 pt-2 border-t border-slate-200">' +
+                           '  <button type="button" onclick="openEditDateModal(\'' + d.id + '\')" class="flex-1 py-1 px-2 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-bold transition-all"><i class="fa-solid fa-pen-to-square mr-1"></i>Edit</button>' +
+                           '  <button type="button" onclick="toggleDateStatus(\'' + d.id + '\')" class="py-1 px-2.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-xs font-bold text-slate-700 transition-all" title="Toggle status"><i class="fa-solid ' + (d.status === 'active' ? 'fa-pause text-amber-600' : 'fa-play text-emerald-600') + '"></i></button>' +
+                           '  <button type="button" onclick="deleteDate(\'' + d.id + '\')" class="py-1 px-2 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold transition-all" title="Delete date"><i class="fa-solid fa-trash-can"></i></button>' +
+                           '</div>';
+          datesListDiv.appendChild(card);
+        });
+      }
+
+      // 2. Render Admin Date Tabs for Quotas
+      var tabsContainer = document.getElementById('admin-date-tabs-container');
+      if (tabsContainer) {
+        tabsContainer.innerHTML = '';
+        eventDates.forEach(function(d) {
+          var isSelected = (d.id === adminSelectedDateId);
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = "px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all border " + (isSelected ? 'bg-[#2F2677] text-white border-[#2F2677] shadow-sm' : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200');
+          btn.innerHTML = '<i class="fa-regular fa-calendar mr-1.5"></i>' + d.dayName + ' (' + d.label + ')';
+          btn.onclick = function() { selectAdminDate(d.id); };
+          tabsContainer.appendChild(btn);
+        });
+      }
+
+      // 3. Render Court Inventory Table for adminSelectedDateId
+      var tableDiv = document.getElementById('admin-inventory-table');
+      if (tableDiv && adminSelectedDateId) {
+        var dateInv = getInventoryForDate(adminSelectedDateId);
+        var currDateObj = eventDates.find(function(d) { return d.id === adminSelectedDateId; });
+        var html = '<div class="text-xs font-bold text-[#2F2677] mb-2"><i class="fa-solid fa-layer-group mr-1"></i>Showing Quota Rights for: ' + (currDateObj ? (currDateObj.dayName + ' - ' + currDateObj.label) : adminSelectedDateId) + '</div>';
+        html += '<table class="w-full text-xs text-left"><thead><tr class="border-b text-slate-500"><th class="pb-2">Sport</th><th class="pb-2">Time Slot</th><th class="pb-2">Capacity</th><th class="pb-2">Booked</th><th class="pb-2">Available</th><th class="pb-2">Status</th></tr></thead><tbody class="divide-y divide-slate-100">';
+
+        Object.keys(dateInv).forEach(function(sKey) {
+          var sport = dateInv[sKey];
+          Object.keys(sport.slots).forEach(function(slotKey) {
+            var data = sport.slots[slotKey];
+            var remaining = data.cap - data.booked;
+            var isFull = remaining <= 0;
+            html += '<tr>' +
+                    '  <td class="py-2.5 font-bold">' + sport.name + '</td>' +
+                    '  <td class="py-2.5">' + slotKey + '</td>' +
+                    '  <td class="py-2.5"><input type="number" min="0" value="' + data.cap + '" onchange="updateSlotCapacity(\'' + sKey + '\', \'' + slotKey + '\', this.value)" class="w-16 px-2 py-1 rounded border border-slate-300 text-xs font-bold" /></td>' +
+                    '  <td class="py-2.5 font-bold">' + data.booked + '</td>' +
+                    '  <td class="py-2.5 font-bold ' + (remaining <= 0 ? 'text-rose-600' : 'text-emerald-600') + '">' + remaining + '</td>' +
+                    '  <td class="py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-black ' + (isFull ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-800') + '">' + (isFull ? 'BLINDED (FULL)' : 'OPEN') + '</span></td>' +
+                    '</tr>';
+          });
+        });
+        html += '</tbody></table>';
+        tableDiv.innerHTML = html;
+      }
+
+      // 4. Update Filter Dropdown Options
+      var filterSelect = document.getElementById('admin-player-date-filter');
+      if (filterSelect) {
+        var currentFilterVal = adminFilterDate;
+        filterSelect.innerHTML = '<option value="all">All Event Dates</option>';
+        eventDates.forEach(function(d) {
+          var opt = document.createElement('option');
+          opt.value = d.id;
+          opt.innerText = d.dayName + ' - ' + d.label;
+          if (d.id === currentFilterVal) opt.selected = true;
+          filterSelect.appendChild(opt);
+        });
+      }
+
+      // 5. Render Players Table with Date Filter & Search
       var tbody = document.getElementById('admin-players-tbody');
       tbody.innerHTML = '';
 
-      if (players.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="py-4 text-center text-slate-400">No players registered yet.</td></tr>';
+      var rowsToRender = [];
+      players.forEach(function(p) {
+        if (adminSearchQuery) {
+          var matchId = (p.id || '').toLowerCase().includes(adminSearchQuery);
+          var matchName = (p.name || '').toLowerCase().includes(adminSearchQuery);
+          var matchMobile = (p.mobile || '').includes(adminSearchQuery);
+          if (!matchId && !matchName && !matchMobile) return;
+        }
+
+        var playerBookings = getPlayerBookingsList(p);
+
+        if (adminFilterDate === 'all') {
+          if (playerBookings.length === 0) {
+            rowsToRender.push({ player: p, booking: null });
+          } else {
+            playerBookings.forEach(function(b) {
+              rowsToRender.push({ player: p, booking: b });
+            });
+          }
+        } else {
+          var matchedBooking = playerBookings.find(function(b) { return b.eventDate === adminFilterDate; });
+          if (matchedBooking) {
+            rowsToRender.push({ player: p, booking: matchedBooking });
+          }
+        }
+      });
+
+      if (rowsToRender.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="py-5 text-center text-slate-400">No registered players match the current date filter or search query.</td></tr>';
       } else {
-        players.forEach(function(p) {
+        rowsToRender.forEach(function(item, idx) {
+          var p = item.player;
+          var b = item.booking;
           var row = document.createElement('tr');
-          var isBooked = p.booking && p.booking.hasBooked;
+          var isBooked = b && b.hasBooked;
           var photoHtml = p.photo ? '<img src="' + p.photo + '" class="w-7 h-7 rounded-full object-cover border border-slate-300" />' : '<span class="text-slate-300">-</span>';
-          var currResult = (p.booking && p.booking.matchResult) ? p.booking.matchResult : 'Scheduled';
+          var currResult = (b && b.matchResult) ? b.matchResult : 'Scheduled';
+          var eventDateId = b ? b.eventDate : '';
+          var dateLabel = b ? (b.eventDayName ? (b.eventDayName + ' (' + (b.eventDateLabel || b.eventDate) + ')') : (b.eventDateLabel || b.eventDate)) : '<span class="text-slate-400 italic">No slot</span>';
+
+          var rowKey = p.id + '_' + (eventDateId || 'none') + '_' + idx;
 
           row.innerHTML = '<td class="py-2.5 px-3">' + photoHtml + '</td>' +
                           '<td class="py-2.5 px-3 font-mono font-black ' + (p.gender === 'Male' ? 'text-[#2F2677]' : 'text-pink-600') + '">' + p.id + '</td>' +
                           '<td class="py-2.5 px-3 font-bold text-slate-900">' + p.name + '</td>' +
                           '<td class="py-2.5 px-3 font-mono">' + p.mobile + '</td>' +
-                          '<td class="py-2.5 px-3">' + (isBooked && p.booking.pickleball_slot ? '<span class="px-2 py-0.5 rounded bg-indigo-50 text-[#2F2677] font-bold">' + p.booking.pickleball_slot + '</span>' : '<span class="text-slate-300">-</span>') + '</td>' +
-                          '<td class="py-2.5 px-3">' + (isBooked && p.booking.cricket_slot ? '<span class="px-2 py-0.5 rounded bg-rose-50 text-[#E20111] font-bold">' + p.booking.cricket_slot + '</span>' : '<span class="text-slate-300">-</span>') + '</td>' +
-                          '<td class="py-2.5 px-3">' + (isBooked && p.booking.paddle_slot ? '<span class="px-2 py-0.5 rounded bg-emerald-50 text-[#008F3D] font-bold">' + p.booking.paddle_slot + '</span>' : '<span class="text-slate-300">-</span>') + '</td>' +
-                          '<td class="py-2.5 px-3"><input type="text" id="res-input-' + p.id + '" value="' + currResult + '" placeholder="e.g. Won 11-7 / Lost / Scheduled" class="w-36 px-2 py-1 rounded border border-slate-300 text-xs font-semibold focus:ring-1 focus:ring-[#2F2677]" /></td>' +
-                          '<td class="py-2.5 px-3"><button type="button" onclick="updateMatchResult(\'' + p.id + '\', document.getElementById(\'res-input-' + p.id + '\').value)" class="px-2.5 py-1 bg-[#2F2677] text-white rounded-lg text-[11px] font-bold hover:bg-[#231b61]">Save Result</button></td>';
+                          '<td class="py-2.5 px-3 font-semibold text-xs text-[#2F2677]">' + dateLabel + '</td>' +
+                          '<td class="py-2.5 px-3">' + (isBooked && b.pickleball_slot ? '<span class="px-2 py-0.5 rounded bg-indigo-50 text-[#2F2677] font-bold">' + b.pickleball_slot + '</span>' : '<span class="text-slate-300">-</span>') + '</td>' +
+                          '<td class="py-2.5 px-3">' + (isBooked && b.cricket_slot ? '<span class="px-2 py-0.5 rounded bg-rose-50 text-[#E20111] font-bold">' + b.cricket_slot + '</span>' : '<span class="text-slate-300">-</span>') + '</td>' +
+                          '<td class="py-2.5 px-3">' + (isBooked && b.paddle_slot ? '<span class="px-2 py-0.5 rounded bg-emerald-50 text-[#008F3D] font-bold">' + b.paddle_slot + '</span>' : '<span class="text-slate-300">-</span>') + '</td>' +
+                          '<td class="py-2.5 px-3"><input type="text" id="res-input-' + rowKey + '" value="' + currResult + '" placeholder="e.g. Won 11-7 / Lost" class="w-32 px-2 py-1 rounded border border-slate-300 text-xs font-semibold focus:ring-1 focus:ring-[#2F2677]" /></td>' +
+                          '<td class="py-2.5 px-3">' + (isBooked ? '<button type="button" onclick="updateMatchResult(\'' + p.id + '\', \'' + eventDateId + '\', document.getElementById(\'res-input-' + rowKey + '\').value)" class="px-2.5 py-1 bg-[#2F2677] text-white rounded-lg text-[11px] font-bold hover:bg-[#231b61] transition-all">Save Result</button>' : '<span class="text-slate-300 text-xs">-</span>') + '</td>';
           tbody.appendChild(row);
         });
       }
-
-      var tableDiv = document.getElementById('admin-inventory-table');
-      var html = '<table class="w-full text-xs text-left"><thead><tr class="border-b text-slate-500"><th class="pb-2">Sport</th><th class="pb-2">Time Slot</th><th class="pb-2">Capacity</th><th class="pb-2">Booked</th><th class="pb-2">Available</th><th class="pb-2">Status</th></tr></thead><tbody class="divide-y divide-slate-100">';
-
-      Object.keys(inventory).forEach(function(sKey) {
-        var sport = inventory[sKey];
-        Object.keys(sport.slots).forEach(function(slotKey) {
-          var data = sport.slots[slotKey];
-          var remaining = data.cap - data.booked;
-          var isFull = remaining <= 0;
-          html += '<tr><td class="py-2.5 font-bold">' + sport.name + '</td><td class="py-2.5">' + slotKey + '</td><td class="py-2.5"><input type="number" min="0" value="' + data.cap + '" onchange="updateSlotCapacity(\'' + sKey + '\', \'' + slotKey + '\', this.value)" class="w-16 px-2 py-1 rounded border border-slate-300 text-xs font-bold" /></td><td class="py-2.5 font-bold">' + data.booked + '</td><td class="py-2.5 font-bold ' + (remaining <= 0 ? 'text-rose-600' : 'text-emerald-600') + '">' + remaining + '</td><td class="py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-black ' + (isFull ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-800') + '">' + (isFull ? 'BLINDED (FULL)' : 'OPEN') + '</span></td></tr>';
-        });
-      });
-      html += '</tbody></table>';
-      tableDiv.innerHTML = html;
     }
 
-    function exportFullMasterCSV() {
+    async function exportFullMasterCSV() {
+      if (supabaseClient) await fetchFromSupabase();
+
       if (players.length === 0) {
         alert('No registered players to export.');
         return;
       }
 
-      var headers = ["Player ID", "Sign-Up Date", "Full Name", "Mobile Number", "Gender", "Age Group", "Membership", "Frequency PB", "Frequency Cricket", "Frequency Paddle", "Has Active Booking", "Group Booking Lead", "PB Slot", "Cricket Slot", "Paddle Slot", "Squad Members", "Match Result", "Booking Timestamp"];
-      var csv = headers.join(",") + "\n";
+      var headers = [
+        "Player ID", "Sign-Up Date", "Full Name", "Mobile Number", "Gender", 
+        "Age Group", "Membership", "Frequency PB", "Frequency Cricket", "Frequency Paddle", 
+        "Event Date ID", "Event Day", "Event Date Label", "Has Active Booking", 
+        "Group Booking Lead", "PB Slot", "Cricket Slot", "Paddle Slot", 
+        "Squad Members", "Match Result", "Booking Timestamp"
+      ];
+
+      function csvCell(value) {
+        var text = value == null ? '' : String(value);
+        if (/^[\s]*[=+\-@]/.test(text)) text = "'" + text;
+        return '"' + text.replace(/"/g, '""') + '"';
+      }
+
+      var lines = [headers.map(csvCell).join(',')];
 
       players.forEach(function(p) {
-        var b = p.booking || {};
-        var row = [
-          '"' + p.id + '"',
-          '"' + p.registeredAt + '"',
-          '"' + p.name + '"',
-          '"' + p.mobile + '"',
-          '"' + p.gender + '"',
-          '"' + p.age + '"',
-          '"' + p.membership + '"',
-          '"' + p.freq_pickleball + '"',
-          '"' + p.freq_cricket + '"',
-          '"' + p.freq_paddle + '"',
-          '"' + (b.hasBooked ? 'YES' : 'NO') + '"',
-          '"' + (b.groupLead || 'Self') + '"',
-          '"' + (b.pickleball_slot || '') + '"',
-          '"' + (b.cricket_slot || '') + '"',
-          '"' + (b.paddle_slot || '') + '"',
-          '"' + ((b.teamList || []).join('; ')) + '"',
-          '"' + (b.matchResult || 'Scheduled') + '"',
-          '"' + (b.timestamp || '') + '"'
-        ];
-        csv += row.join(",") + "\n";
+        var pBookings = getPlayerBookingsList(p);
+        if (pBookings.length === 0) {
+          var row = [
+            p.id, p.registeredAt, p.name, p.mobile, p.gender,
+            p.age, p.membership, p.freq_pickleball, p.freq_cricket, p.freq_paddle,
+            '', '', '', 'NO',
+            '', '', '', '',
+            '', '', ''
+          ];
+          lines.push(row.map(csvCell).join(','));
+        } else {
+          pBookings.forEach(function(b) {
+            var row = [
+              p.id, p.registeredAt, p.name, p.mobile, p.gender,
+              p.age, p.membership, p.freq_pickleball, p.freq_cricket, p.freq_paddle,
+              b.eventDate || '', b.eventDayName || '', b.eventDateLabel || '', (b.hasBooked ? 'YES' : 'NO'),
+              b.groupLead || 'Self', b.pickleball_slot || '', b.cricket_slot || '', b.paddle_slot || '',
+              (b.teamList || []).join('; '), b.matchResult || 'Scheduled', b.timestamp || ''
+            ];
+            lines.push(row.map(csvCell).join(','));
+          });
+        }
       });
 
-      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      var blob = new Blob(['\uFEFF' + lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8;' });
       var url = window.URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
       a.download = "JITO_Players_Master_Database_" + Date.now() + ".csv";
       a.click();
+      setTimeout(function() { window.URL.revokeObjectURL(url); }, 1000);
     }
 
-    // Initialize Supabase on page load
+    // Initialize on page load
     window.addEventListener('DOMContentLoaded', function() {
+      recalculateInventoryBookings();
+      renderPlayerDateSelector();
       initSupabase();
     });
   </script>

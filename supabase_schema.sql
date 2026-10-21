@@ -26,7 +26,12 @@ CREATE TABLE IF NOT EXISTS public.jito_players (
 -- Index mobile for fast unique lookups
 CREATE INDEX IF NOT EXISTS idx_jito_players_mobile ON public.jito_players(mobile);
 
--- 2. Create table for Global App State (Inventory, Sequence counters, Admin PIN)
+-- 2. Create table for Global App State (Event Dates, Inventory By Date, Sequence counters, Admin PIN)
+-- App state keys stored here:
+--  - 'eventDates': Array of tournament dates [{ id, label, dayName, status }]
+--  - 'inventoryByDate': Quotas & booked counts per date and sport
+--  - 'nextMaleSeq': Next male player ID counter
+--  - 'nextFemaleSeq': Next female player ID counter
 CREATE TABLE IF NOT EXISTS public.jito_app_state (
     key TEXT PRIMARY KEY,
     value JSONB NOT NULL,
